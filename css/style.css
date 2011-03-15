@@ -1,0 +1,32 @@
+/* reset rules */
+div,p,h1,h2,h3,ul,ol,li,a,form,input,table,th,td{margin:0;padding:0}
+a{text-decoration:none;}
+fieldset,img{border:0;}
+table{border-collapse:collapse;border-spacing:0;}
+li{list-style:none;}
+
+/* global */
+.clear{clear:both;}
+
+/* page ui widgets */
+.wrapper{margin:0 auto;width:800px;}
+.status{position:absolute;}		
+.board{width:100%;}
+.board .actionbar{}
+.board .actionbar:after{content:'';clear:both;display:block;}
+.board .actionbar .action-btns{float:right;}
+.board .doc{width:100%;height:10px;background:#ccc;}
+
+/* the grid system */
+
+
+/* to be cleaned */
+.drag{
+	width:100px;
+	height:100px;
+	background:#39d;
+	position:absolute;
+	top:120px;
+	left:120px;
+	cursor:cross;
+}
