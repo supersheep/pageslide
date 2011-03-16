@@ -19,9 +19,8 @@
 				</div>
 			</div>
 			<div class="doc" id="doc">
-				<div class="row"></div>	
-				<div class="row"></div>	
-				<div class="row"></div>	
+				<div class="row"><div class="grid"></div></div>	
+				<div class="hhandler"></div>
 			</div>	
 			<div class="clear"></div>
 		</div>
@@ -29,35 +28,77 @@
 	</div>
 
 	<!-- div class="drag"></div -->
-	<script type="text/javascript">
+	<script type="text/javascript">		
+		
+		Grid = new Class({
+			elem:null,
+			cls:'grid',
+			initialize:function(cls){
+				cls = cls||this.cls;
+				this.elem = new Element('div',{'class':cls});
+			}
+		});
+		
+		Row = new Class({
+			elem:null,
+			cls:'row',	
+			initialize:function(cls){
+				cls = cls||this.cls;
+				this.elem = new Element('div',{'class':cls});	
+				this.addGrid();		
+			},
+			addGrid:function(){
+				var grid=new Grid();
+				grid.elem.inject(this.elem);
+			}
+		});
+		
+		Hhandler=new Class({
+			elem:null,
+			cls:'hhandler',
+			initialize:function(cls){
+				cls = cls||this.cls;
+				this.elem = new Element('div',{'class':cls});
+			}
+		});
+				
+		
+		Doc=new Class({
+			elem:null,
+			cls:'doc',
+			initialize:function(cls){
+				var cls = cls||this.cls;
+				this.elem = $$('.'+cls)[0];	
+			},
+			addRow:function(){				
+				var row = new Row();
+				row.elem.inject(this.elem);
+				var hhandler = new Hhandler();
+				hhandler.elem.inject(this.elem);
+			},	
+			save:function(){}		
+		})
 		
 		/**
 		 * __Hook is a id
 		 * __Class should be a css class
 		 * __Selector should be a css selector
 		**/		
-		var cfg={
+		var cfg = {
 			addRowHook:'jAddRow',
 			saveHook:'jSave',
-			docClass:'doc',
-			rowClass:'row'
+			gridClass:'grid'
 		};
 		
 		
-		UI={
-			addRow:function(cfg){				
-				var newRow = new Element('div',{'class':cfg.rowClass});
-				newRow.inject($(cfg.docClass),'top');
-			}						
-		};		
-		
-		function init(cfg){
+		/* init */
+		(function (cfg){
+			var doc = new Doc('doc');
 			$(cfg.addRowHook).addEvent('click',function(){
-				UI.addRow(cfg);
+				doc.addRow();
 			});
-		};
+		})(cfg);
 		
-		init(cfg);
 		//new Drag($$('.drag')[0],{limit:{x:[100,300],y:[120,120]}})
 	</script>
 </body>

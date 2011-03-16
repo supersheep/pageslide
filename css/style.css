@@ -17,9 +17,10 @@ li{list-style:none;}
 .board .actionbar .action-btns{float:right;}
 .board .doc{width:100%;background:#ccc;}
 
+.hhandler{height:10px;cursor: row-resize;background:#eee url('../img/handle-h.png') no-repeat center;}
 /* the grid system */
-.doc{padding:1px;}
-.row{margin:10px;background:#fff;height:50px;}
+.doc{border:1px solid #ccc;}
+.row{background:#fff;height:50px;}
 
 /* to be cleaned */
 .drag{
