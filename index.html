@@ -19,8 +19,6 @@
 				</div>
 			</div>
 			<div class="doc" id="doc">
-				<div class="row"><div class="grid"></div></div>	
-				<div class="hhandler"></div>
 			</div>	
 			<div class="clear"></div>
 		</div>
@@ -53,6 +51,34 @@
 			}
 		});
 		
+		Handler = new Class({
+			initialize:function(elem,model){
+				this.elem=elem;
+				this.model=model;
+				this.document=elem.getDocument();
+				elem.addEvent('mousedown',this.start.bind(this));
+			},
+			start:function(event){
+				this.prev=this.elem.getPrevious();
+				this.next=this.elem.getNext();
+				this.startpos=event.page;
+				this.prev.size=this.prev.getSize();
+				this.document.addEvent('mousemove',this.move.bind(this));
+				this.document.addEvent('mouseup',this.end.bind(this));
+			},
+			move:function(event){
+				if(this.model == 'v'){
+					this.prev.setStyle('height',this.prev.size.y + event.page.y - this.startpos.y);
+				}
+			},
+			end:function(event){
+				this.document.removeEvents('mousemove');
+				this.document.removeEvents('mouseup');
+			}
+		
+		});
+		
+		
 		Hhandler=new Class({
 			elem:null,
 			cls:'hhandler',
@@ -61,7 +87,17 @@
 				this.elem = new Element('div',{'class':cls});
 			}
 		});
-				
+		
+		Vhandler=new Class({
+			elem:null,
+			cls:'vhandler',
+			initialize:function(cls){
+				cls = cls||this.cls;
+				this.elem = new Element('div',{'class':cls});
+				new Handler(this.elem,'v');
+			}			
+		});
+		
 		
 		Doc=new Class({
 			elem:null,
@@ -73,14 +109,14 @@
 			addRow:function(){				
 				var row = new Row();
 				row.elem.inject(this.elem);
-				var hhandler = new Hhandler();
-				hhandler.elem.inject(this.elem);
+				var vhandler = new Vhandler();
+				vhandler.elem.inject(this.elem);
 			},	
 			save:function(){}		
 		})
 		
 		/**
-		 * __Hook is a id
+		 * __Hook is an id
 		 * __Class should be a css class
 		 * __Selector should be a css selector
 		**/		
@@ -94,6 +130,7 @@
 		/* init */
 		(function (cfg){
 			var doc = new Doc('doc');
+			doc.addRow();
 			$(cfg.addRowHook).addEvent('click',function(){
 				doc.addRow();
 			});

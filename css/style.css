@@ -17,10 +17,14 @@ li{list-style:none;}
 .board .actionbar .action-btns{float:right;}
 .board .doc{width:100%;background:#ccc;}
 
-.hhandler{height:10px;cursor: row-resize;background:#eee url('../img/handle-h.png') no-repeat center;}
+.vhandler{height:10px;cursor: row-resize;background:#eee url('../img/vhandler.png') no-repeat center;}
+.hhandler{width:10px;cursor: col-resize;background:#eee url('../img/hhandler.png') no-repeat center;}
+
+
 /* the grid system */
 .doc{border:1px solid #ccc;}
 .row{background:#fff;height:50px;}
+
 
 /* to be cleaned */
 .drag{
