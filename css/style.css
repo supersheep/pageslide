@@ -20,10 +20,13 @@ li{list-style:none;}
 .vhandler{height:10px;cursor: row-resize;background:#eee url('../img/vhandler.png') no-repeat center;}
 .hhandler{width:10px;cursor: col-resize;background:#eee url('../img/hhandler.png') no-repeat center;}
 
+.rowfunc{position:absolute;right:0;}
+.rowfunc .btn{float:left;margin:0 5px;display:block;}
 
+.hide{display:none;}
 /* the grid system */
 .doc{border:1px solid #ccc;}
-.row{background:#fff;height:50px;}
+.row{background:#fff;height:50px;position:relative;}
 
 
 /* to be cleaned */
