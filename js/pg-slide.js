@@ -6,7 +6,48 @@ var Grid = new Class({
 			this.elem = new Element('div', {
 					'class' : cls
 				});
+			this.prepareFunc();
+		},
+		prepareFunc : function () {
+			var func = new Element('div', {
+					'class' : 'gridfunc'
+				});
+			var btnbasecls = 'btn hide';
+			var btns = {
+				slicegrid : {
+					cls : 'btnslicegrid',
+					txt : '-',
+					handler : this.sliceGrid.bind(this)
+				}, 
+				moverow : {
+					cls : 'btnmoverow',
+					txt : 'm',
+					handler : function (elem) {
+						console.log(elem)
+					}
+				}
+			};
+			for (var key in btns) {
+				var btn = btns[key];
+				var elem = new Element('a', {
+						'class' : btn.cls + btnbasecls, 
+						'html' : btn.txt
+					});
+				elem.addEvent('click', (function () {
+							var hd = btn.handler;
+							return function () {
+								hd();
+							}
+						})());
+				
+				elem.inject(func);
+			}
+			func.inject(this.elem, 'top');
+		},
+		sliceGrid : function(){
+		
 		}
+		
 	});
 
 var Row = new Class({
@@ -24,7 +65,7 @@ var Row = new Class({
 			var func = new Element('div', {
 					'class' : 'rowfunc'
 				});
-			var btnbasecls = ' btn hide';
+			var btnbasecls = 'btn hide';
 			var btns = {
 				addgrid : {
 					cls : 'btnaddgrid',
