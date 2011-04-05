@@ -17,17 +17,22 @@ li{list-style:none;}
 .board .actionbar .action-btns{float:right;}
 .board .doc{width:100%;background:#ccc;}
 
-.vhandler{height:10px;cursor: row-resize;background:#eee url('../img/vhandler.png') no-repeat center;}
-.hhandler{width:10px;cursor: col-resize;background:#eee url('../img/hhandler.png') no-repeat center;}
+.vhandler{height:10px;cursor: row-resize;background:#eee url('../img/handler-v.png') no-repeat center;}
+.hhandler{width:10px;cursor: col-resize;background:#eee url('../img/handler-h.png') no-repeat center;}
 
-.rowfunc{position:absolute;right:0;}
-.rowfunc .btn{float:left;margin:0 5px;display:block;}
+.gridfunc{position:absolute;left:0;background:#3d9;}
+.gridfunc .btn{float:left;}
+.rowfunc{position:absolute;width:20px;right:-20px;background-color:#39d;}
+.rowfunc .btn{float:left;}
+.btn{margin:0 5px;display:block;}
 
 .hide{display:none;}
 /* the grid system */
 .doc{border:1px solid #ccc;}
 .row{background:#fff;height:50px;position:relative;}
-
+.row:after{display:block;clear:both;content:'';}
+.grid{}
+.grid,.hhandler{float:left;height:100%;}
 
 /* to be cleaned */
 .drag{

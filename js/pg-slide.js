@@ -1,29 +1,40 @@
 var Grid = new Class({
-		elem : null, 
 		cls : 'grid', 
 		initialize : function (cls) {
 			cls = cls || this.cls;
 			this.elem = new Element('div', {
 					'class' : cls
-				});
+				});		
+			this.showhideBtn();
 			this.prepareFunc();
 		},
+		showhideBtn:function(){
+			this.elem.addEvent('mouseover',function(){
+				this.getElements('.btn').removeClass('hide');
+			});
+			this.elem.addEvent('mouseout',function(){
+				this.getElements('.btn').addClass('hide');
+			});
+		},
 		prepareFunc : function () {
+			var _this = this;
 			var func = new Element('div', {
 					'class' : 'gridfunc'
 				});
-			var btnbasecls = 'btn hide';
+			var btnbasecls = ' btn hide';
 			var btns = {
 				slicegrid : {
 					cls : 'btnslicegrid',
-					txt : '-',
-					handler : this.sliceGrid.bind(this)
+					txt : '|',
+					handler : function(obj){
+						obj.sliceGrid();
+					}
 				}, 
 				moverow : {
 					cls : 'btnmoverow',
 					txt : 'm',
-					handler : function (elem) {
-						console.log(elem)
+					handler : function (obj) {
+						console.log(obj)
 					}
 				}
 			};
@@ -35,8 +46,9 @@ var Grid = new Class({
 					});
 				elem.addEvent('click', (function () {
 							var hd = btn.handler;
+							var o = _this
 							return function () {
-								hd();
+								hd(o);
 							}
 						})());
 				
@@ -45,38 +57,63 @@ var Grid = new Class({
 			func.inject(this.elem, 'top');
 		},
 		sliceGrid : function(){
-		
+			var el = this.elem;				
+			var grid = new Grid();
+			grid.elem.inject(el,'after');
+			var hhandler = new Hhandler();
+			hhandler.elem.inject(el,'after');
 		}
 		
 	});
 
 var Row = new Class({
-		elem : null, 
 		cls : 'row', 
+		
 		initialize : function (cls) {
 			cls = cls || this.cls;
 			this.elem = new Element('div', {
 					'class' : cls
-				});
+				});	
+			this.showhideBtn();
 			this.addGrid();
 			this.prepareFunc();
 		}, 
+		
+		showhideBtn:function(){
+			this.elem.addEvent('mouseover',function(){
+				this.getElements('.btn').removeClass('hide');
+			});
+			this.elem.addEvent('mouseout',function(){
+				this.getElements('.btn').addClass('hide');
+			});
+		},
+		
 		prepareFunc : function () {
+			var _this = this;
 			var func = new Element('div', {
 					'class' : 'rowfunc'
 				});
-			var btnbasecls = 'btn hide';
+			var btnbasecls = ' btn hide';
 			var btns = {
 				addgrid : {
 					cls : 'btnaddgrid',
 					txt : '+',
-					handler : this.addGrid.bind(this)
+					handler : function(el){
+						console.log(el);
+					}
 				}, 
 				moverow : {
 					cls : 'btnmoverow',
 					txt : 'm',
-					handler : function (elem) {
-						console.log(elem)
+					handler : function (obj) {
+						console.log(obj);
+					}
+				},
+				removerow : {
+					cls : 'btnremoverow',
+					txt : '-',
+					handler : function(obj){
+						_this.removeRow(obj);
 					}
 				}
 			};
@@ -88,19 +125,23 @@ var Row = new Class({
 					});
 				elem.addEvent('click', (function () {
 							var hd = btn.handler;
+							var o = _this;
 							return function () {
-								hd();
+								hd(o);
 							}
 						})());
-				
 				elem.inject(func);
 			}
 			func.inject(this.elem, 'top');
 		}, 
 		addGrid : function () {
-			console.log(this.elem);
 			var grid = new Grid();
 			grid.elem.inject(this.elem);
+		},
+		removeRow : function(obj){
+			var el = obj.elem;
+			el.getNext().destroy();
+			el.destroy();	
 		}
 	});
 
@@ -144,7 +185,6 @@ var Handler = new Class({
 	});
 
 var Hhandler = new Class({
-		elem : null, 
 		cls : 'hhandler', 
 		initialize : function (cls) {
 			cls = cls || this.cls;
@@ -155,7 +195,6 @@ var Hhandler = new Class({
 	});
 
 var Vhandler = new Class({
-		elem : null, 
 		cls : 'vhandler', 
 		initialize : function (cls) {
 			cls = cls || this.cls;
@@ -165,9 +204,10 @@ var Vhandler = new Class({
 			new Handler(this.elem, 'v');
 		}
 	});
+	
+	
 
 var Doc = new Class({
-		elem : null, 
 		cls : 'doc', 
 		initialize : function (cls) {
 			cls = cls || this.cls;
