@@ -1,10 +1,12 @@
 var Grid = new Class({
 		cls : 'grid', 
+		margin : 15,
+		
 		initialize : function (cls) {
 			cls = cls || this.cls;
 			this.elem = new Element('div', {
 					'class' : cls
-				});		
+				});			
 			this.showhideBtn();
 			this.prepareFunc();
 		},
@@ -56,11 +58,27 @@ var Grid = new Class({
 			}
 			func.inject(this.elem, 'top');
 		},
+		fitWidth : function(w){
+			var oldwidth = this.elem.getWidth();
+			var width;
+			if(oldwidth){
+				width = ( oldwidth - this.margin ) / 2;
+			}else{
+				
+			}
+			this.width = this.elem.getWidth() || '100%';
+			w = w || this.width;
+			this.elem.setStyle('width',w);
+		},
 		sliceGrid : function(){
-			var el = this.elem;				
+			var el = this.elem;	
 			var grid = new Grid();
-			grid.elem.inject(el,'after');
-			var hhandler = new Hhandler();
+			var w;
+			w = 
+			grid.elem.inject(el,'after');			
+			this.fitWidth();
+			grid.fitWidth();
+			var hhandler = new Hhandler(this.margin);
 			hhandler.elem.inject(el,'after');
 		}
 		
@@ -68,6 +86,7 @@ var Grid = new Class({
 
 var Row = new Class({
 		cls : 'row', 
+		margin : 15,
 		
 		initialize : function (cls) {
 			cls = cls || this.cls;
@@ -96,7 +115,7 @@ var Row = new Class({
 			var btnbasecls = ' btn hide';
 			var btns = {
 				addgrid : {
-					cls : 'btnaddgrid',
+					cls : 'btnaddrow',
 					txt : '+',
 					handler : function(el){
 						console.log(el);
@@ -137,6 +156,7 @@ var Row = new Class({
 		addGrid : function () {
 			var grid = new Grid();
 			grid.elem.inject(this.elem);
+			grid.fitWidth();
 		},
 		removeRow : function(obj){
 			var el = obj.elem;
@@ -186,21 +206,28 @@ var Handler = new Class({
 
 var Hhandler = new Class({
 		cls : 'hhandler', 
-		initialize : function (cls) {
+		width : 10,
+		initialize : function (width,cls) {
 			cls = cls || this.cls;
+			width = width || this.width;
 			this.elem = new Element('div', {
 					'class' : cls
 				});
+			this.elem.setStyle('width',width+'px');
+			new Handler(this.elem,'h');
 		}
 	});
 
 var Vhandler = new Class({
 		cls : 'vhandler', 
-		initialize : function (cls) {
+		height : 10,
+		initialize : function (height,cls) {
 			cls = cls || this.cls;
+			height = height || this.height;
 			this.elem = new Element('div', {
 					'class' : cls
 				});
+			this.elem.setStyle('height',height+'px');
 			new Handler(this.elem, 'v');
 		}
 	});
@@ -209,14 +236,17 @@ var Vhandler = new Class({
 
 var Doc = new Class({
 		cls : 'doc', 
-		initialize : function (cls) {
+		
+		initialize : function (rowmargin,gridmargin,cls) {
 			cls = cls || this.cls;
+			this.rowmargin = rowmargin;
 			this.elem = document.getElement('.' + cls);
+			this.addRow();
 		}, 
 		addRow : function () {
 			var row = new Row();
 			row.elem.inject(this.elem);
-			var vhandler = new Vhandler();
+			var vhandler = new Vhandler(this.rowmargin);
 			vhandler.elem.inject(this.elem);
 		}, 
 		save : function () {

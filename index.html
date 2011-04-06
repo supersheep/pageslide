@@ -15,7 +15,6 @@
 		<div class="board">		
 			<div class="actionbar">
 				<div class="action-btns">
-					<a href="javascript:;" id="jAddRow">add a row</a>
 					<a href="javascript:;" id="jSave">save</a>
 				</div>
 			</div>
@@ -34,18 +33,15 @@
 		 * __Selector should be a css selector
 		**/		
 		var cfg = {
-			addRowHook:'jAddRow',
 			saveHook:'jSave',
-			gridClass:'grid'
+			gridClass:'grid',
+			rowmargin:10,
+			gridmargin:30,
 		};		
 		
 		/* init */
 		(function (cfg){
-			var doc = new Doc('doc');
-			doc.addRow();
-			$(cfg.addRowHook).addEvent('click',function(){
-				doc.addRow();
-			});
+			var doc = new Doc(cfg.rowmargin,cfg.gridmargin,'doc');
 		})(cfg);
 		
 		//new Drag($$('.drag')[0],{limit:{x:[100,300],y:[120,120]}})

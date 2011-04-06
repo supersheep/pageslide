@@ -31,7 +31,7 @@ li{list-style:none;}
 .doc{border:1px solid #ccc;}
 .row{background:#fff;height:50px;position:relative;}
 .row:after{display:block;clear:both;content:'';}
-.grid{}
+.grid{background:#fff;position:relative;}
 .grid,.hhandler{float:left;height:100%;}
 
 /* to be cleaned */
