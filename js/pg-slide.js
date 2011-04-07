@@ -1,14 +1,29 @@
+var errors = {
+	cantremove : '再删就没啦'
+};
+
 var Grid = new Class({
-		cls : 'grid', 
-		margin : 15,
+		opt:{			
+			gridcls : 'grid', 
+			rowmargin : 15,
+			hhcls : 'hhandler'
+		},
 		
-		initialize : function (cls) {
-			cls = cls || this.cls;
+		initialize : function (opt) {	
+			this.opt = opt = $merge(this.opt,opt);
+			var cls = opt.gridcls;
 			this.elem = new Element('div', {
 					'class' : cls
-				});			
+				});	
+			this.unselectable();
 			this.showhideBtn();
 			this.prepareFunc();
+		},
+		unselectable:function(){
+			var el = this.elem;
+			el.set('unselectable','on');//for ie
+			el.set('onselectstart','return false');//for webkit
+			el.setStyle('-moz-user-select','none')//for ff
 		},
 		showhideBtn:function(){
 			this.elem.addEvent('mouseover',function(){
@@ -28,8 +43,8 @@ var Grid = new Class({
 				slicegrid : {
 					cls : 'btnslicegrid',
 					txt : '|',
-					handler : function(obj){
-						obj.sliceGrid();
+					handler : function(){
+						_this.sliceGrid();
 					}
 				}, 
 				moverow : {
@@ -48,9 +63,8 @@ var Grid = new Class({
 					});
 				elem.addEvent('click', (function () {
 							var hd = btn.handler;
-							var o = _this
 							return function () {
-								hd(o);
+								hd();
 							}
 						})());
 				
@@ -62,34 +76,38 @@ var Grid = new Class({
 			var oldwidth = this.elem.getWidth();
 			var width;
 			if(oldwidth){
-				width = ( oldwidth - this.margin ) / 2;
+				width = ( oldwidth - this.opt.gridmargin ) / 2;
+				width += 'px';
 			}else{
-				
+				width = '100%';
 			}
-			this.width = this.elem.getWidth() || '100%';
-			w = w || this.width;
+			w = w || width;
 			this.elem.setStyle('width',w);
+			return width;
 		},
 		sliceGrid : function(){
 			var el = this.elem;	
-			var grid = new Grid();
+			var grid = new Grid(this.opt);
 			var w;
-			w = 
 			grid.elem.inject(el,'after');			
-			this.fitWidth();
-			grid.fitWidth();
-			var hhandler = new Hhandler(this.margin);
+			w = this.fitWidth();
+			grid.fitWidth(w);
+			var hhandler = new Hhandler(this.opt);
 			hhandler.elem.inject(el,'after');
 		}
 		
 	});
 
 var Row = new Class({
-		cls : 'row', 
-		margin : 15,
 		
-		initialize : function (cls) {
-			cls = cls || this.cls;
+		opt:{
+			rowcls:'row',
+			rowmargin:10
+		},
+		
+		initialize : function (opt) {
+			this.opt = opt = $merge(this.opt,opt);
+			var cls = opt.rowcls;
 			this.elem = new Element('div', {
 					'class' : cls
 				});	
@@ -117,22 +135,22 @@ var Row = new Class({
 				addgrid : {
 					cls : 'btnaddrow',
 					txt : '+',
-					handler : function(el){
-						console.log(el);
+					handler : function(obj){
+						_this.addRow();
 					}
 				}, 
 				moverow : {
 					cls : 'btnmoverow',
 					txt : 'm',
 					handler : function (obj) {
-						console.log(obj);
+					
 					}
 				},
 				removerow : {
 					cls : 'btnremoverow',
 					txt : '-',
 					handler : function(obj){
-						_this.removeRow(obj);
+						_this.removeRow();
 					}
 				}
 			};
@@ -143,35 +161,58 @@ var Row = new Class({
 						'html' : btn.txt
 					});
 				elem.addEvent('click', (function () {
-							var hd = btn.handler;
-							var o = _this;
-							return function () {
-								hd(o);
-							}
-						})());
+					var hd = btn.handler;
+					return function () {
+						hd();
+					}
+				})());
 				elem.inject(func);
 			}
 			func.inject(this.elem, 'top');
-		}, 
+		},
+		
 		addGrid : function () {
-			var grid = new Grid();
+			var grid = new Grid(this.opt);
 			grid.elem.inject(this.elem);
 			grid.fitWidth();
 		},
-		removeRow : function(obj){
-			var el = obj.elem;
-			el.getNext().destroy();
-			el.destroy();	
+		
+		addRow : function (obj) {
+			var el = this.elem;
+			var nextvhandler = el.getNext('.vhandler');
+			var row = new Row(this.opt);
+			row.elem.inject(nextvhandler,'after');
+			var vhandler = new Vhandler(this.opt);
+			vhandler.elem.inject(row.elem,'after');
+		},
+		
+		removeRow : function(){
+			var el = this.elem;
+			var rownum = document.getElements('.' + this.cls).length;
+			if( rownum > 1 ){
+				el.getNext().destroy();
+				el.destroy();	
+			}else{
+				alert(errors.cantremove);
+			}
 		}
 	});
 
 var Handler = new Class({
+		hmin : 50,
 		initialize : function (elem, mode) {
 			this.elem = elem;
 			this.mode = mode;
 			this.document = elem.getDocument();
+			this.unselectable();
 			elem.addEvent('mousedown', this.start.bind(this));
 		}, 
+		unselectable:function(){
+			var el = this.elem;
+			el.set('unselectable','on');//for ie
+			el.set('onselectstart','return false');//for webkit
+			el.setStyle('-moz-user-select','none')//for ff
+		},
 		start : function (event) {
 			this.startpos = event.page;
 			
@@ -193,8 +234,13 @@ var Handler = new Class({
 					this.next.setStyle('height', this.next.size.y - ychanged);
 				}
 			} else if (this.mode == 'h') {
-				this.prev.setStyle('width', this.prev.size.x + xchanged);
-				this.next.setStyle('width', this.next.size.x - xchanged);
+				var prevwidth = this.prev.size.x + xchanged;
+				var nextwidth = this.next.size.x - xchanged;
+				var hmin = this.hmin;
+				if( prevwidth > hmin && nextwidth > hmin ){
+					this.prev.setStyle('width', this.prev.size.x + xchanged);
+					this.next.setStyle('width', this.next.size.x - xchanged);
+				}
 			}
 		}, 
 		end : function (event) {
@@ -205,11 +251,14 @@ var Handler = new Class({
 	});
 
 var Hhandler = new Class({
-		cls : 'hhandler', 
-		width : 10,
-		initialize : function (width,cls) {
-			cls = cls || this.cls;
-			width = width || this.width;
+		opt:{		
+			hhcls : 'hhandler', 
+			gridmargin : 10,
+		},
+		initialize : function (opt) {		
+			this.opt = opt = $merge(this.opt,opt);
+			var cls = opt.hhcls;
+			var width = opt.gridmargin;
 			this.elem = new Element('div', {
 					'class' : cls
 				});
@@ -219,11 +268,14 @@ var Hhandler = new Class({
 	});
 
 var Vhandler = new Class({
-		cls : 'vhandler', 
-		height : 10,
-		initialize : function (height,cls) {
-			cls = cls || this.cls;
-			height = height || this.height;
+		opt : {		
+			vhcls : 'vhandler', 
+			rowmargin : 10,
+		},
+		initialize : function (opt) {
+			this.opt = opt = $merge(this.opt,opt);
+			var cls = opt.vhcls;
+			var height = opt.rowmargin;
 			this.elem = new Element('div', {
 					'class' : cls
 				});
@@ -235,21 +287,34 @@ var Vhandler = new Class({
 	
 
 var Doc = new Class({
-		cls : 'doc', 
+		opt : {			
+			doccls : 'doc', 
+			rowcls: 'row',
+			gridcls: 'grid',
+			rowmargin: 10,
+			gridmargin: 20, 
+		},
 		
-		initialize : function (rowmargin,gridmargin,cls) {
-			cls = cls || this.cls;
-			this.rowmargin = rowmargin;
+		initialize : function (opt) {
+			this.opt = opt = $merge(this.opt,opt);
+			var cls = opt.doccls;
+			this.rowmargin = opt.rowmargin;
 			this.elem = document.getElement('.' + cls);
 			this.addRow();
 		}, 
 		addRow : function () {
-			var row = new Row();
+			var row = new Row(this.opt);
 			row.elem.inject(this.elem);
-			var vhandler = new Vhandler(this.rowmargin);
+			var vhandler = new Vhandler(this.opt);
 			vhandler.elem.inject(this.elem);
 		}, 
 		save : function () {
+			var obj;
+			var el = this.elem;
+			var rows = el.getElements('.row');
+			for(var i=0,l=rows.length; i<l ; i++){
+				rows[i];
+			}
 		}
 	});
  
