@@ -284,7 +284,19 @@ var Vhandler = new Class({
 		}
 	});
 	
+	/*
 	
+	doc:{
+		rowmargin:
+		gridmargin:
+		rows:[
+			{
+				height:f,
+				grids:[]
+			}
+		]
+	}
+	*/
 
 var Doc = new Class({
 		opt : {			
@@ -309,12 +321,28 @@ var Doc = new Class({
 			vhandler.elem.inject(this.elem);
 		}, 
 		save : function () {
-			var obj;
+			var json;
+			var rowarr=[],gridarr,rowattr=[];
 			var el = this.elem;
 			var rows = el.getElements('.row');
-			for(var i=0,l=rows.length; i<l ; i++){
-				rows[i];
+			for(var i = 0 , l = rows.length ; i < l ; i++){				
+				var rowheight = rows[i].getHeight();
+				var grids = rows[i].getElements('.grid');
+				gridarr = [];
+				rowattr = [];
+				for(var j = 0 , k = grids.length ; j < k ; j++ ){
+					var gridwidth = grids[j].getWidth()
+					gridarr.push(gridwidth);
+				}
+				gridstr = 'grids:[' + gridarr.join(',') + ']';
+				
+				rowattr.push('height:' + rowheight);
+				rowattr.push(gridstr);
+				rowarr.push( '{' + rowattr.join(',') + '}');
 			}
+			rowstr = '[' + rowarr.join(',') + ']';			
+			json = "doc:" + rowstr;
+			console.log(json);
 		}
 	});
  
