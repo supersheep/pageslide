@@ -1,5 +1,6 @@
 var errors = {
-	cantremove : '再删就没啦'
+	cantremove : '再删就没啦',
+	cantslice : '再分就看不到啦' 
 };
 
 var Grid = new Class({
@@ -66,34 +67,48 @@ var Grid = new Class({
 							return function () {
 								hd();
 							}
-						})());
-				
+						})());				
 				elem.inject(func);
 			}
 			func.inject(this.elem, 'top');
 		},
 		fitWidth : function(w){
 			var oldwidth = this.elem.getWidth();
-			var width;
+			var width, re;
 			if(oldwidth){
 				width = ( oldwidth - this.opt.gridmargin ) / 2;
-				width += 'px';
 			}else{
 				width = '100%';
+			}			
+			w = w || width;			
+			if ( w != '100%' && w < this.opt.hmin ){
+				alert(errors.cantslice);
+				re = false;
+			}else{
+				re = w
 			}
-			w = w || width;
-			this.elem.setStyle('width',w);
-			return width;
+			return re;
+		},
+		setWidth : function(w){
+			if( w == '100%' ){
+				this.elem.setStyle('width',w);
+			}else{
+				this.elem.setStyle('width',w+'px');
+			}
 		},
 		sliceGrid : function(){
 			var el = this.elem;	
-			var grid = new Grid(this.opt);
-			var w;
-			grid.elem.inject(el,'after');			
+			var opt = this.opt;
+			var w;	
 			w = this.fitWidth();
-			grid.fitWidth(w);
-			var hhandler = new Hhandler(this.opt);
-			hhandler.elem.inject(el,'after');
+			if(w){
+				this.setWidth(w);
+				var grid = new Grid(opt);
+				grid.elem.inject(el,'after');
+				grid.setWidth(w);
+				var hhandler = new Hhandler(opt);
+				hhandler.elem.inject(el,'after');
+			}
 		}
 		
 	});
@@ -174,7 +189,7 @@ var Row = new Class({
 		addGrid : function () {
 			var grid = new Grid(this.opt);
 			grid.elem.inject(this.elem);
-			grid.fitWidth();
+			grid.setWidth(grid.fitWidth());
 		},
 		
 		addRow : function (obj) {
@@ -199,8 +214,12 @@ var Row = new Class({
 	});
 
 var Handler = new Class({
-		hmin : 50,
-		initialize : function (elem, mode) {
+		opt:{
+			hmin : 50,
+			vmin : 50
+		},
+		initialize : function (elem, mode,opt) {
+			this.opt = opt = $merge(this.opt,opt);
 			this.elem = elem;
 			this.mode = mode;
 			this.document = elem.getDocument();
@@ -236,7 +255,7 @@ var Handler = new Class({
 			} else if (this.mode == 'h') {
 				var prevwidth = this.prev.size.x + xchanged;
 				var nextwidth = this.next.size.x - xchanged;
-				var hmin = this.hmin;
+				var hmin = this.opt.hmin;
 				if( prevwidth > hmin && nextwidth > hmin ){
 					this.prev.setStyle('width', this.prev.size.x + xchanged);
 					this.next.setStyle('width', this.next.size.x - xchanged);
@@ -320,29 +339,40 @@ var Doc = new Class({
 			var vhandler = new Vhandler(this.opt);
 			vhandler.elem.inject(this.elem);
 		}, 
-		save : function () {
-			var json;
-			var rowarr=[],gridarr,rowattr=[];
-			var el = this.elem;
-			var rows = el.getElements('.row');
-			for(var i = 0 , l = rows.length ; i < l ; i++){				
-				var rowheight = rows[i].getHeight();
-				var grids = rows[i].getElements('.grid');
-				gridarr = [];
-				rowattr = [];
-				for(var j = 0 , k = grids.length ; j < k ; j++ ){
-					var gridwidth = grids[j].getWidth()
-					gridarr.push(gridwidth);
-				}
-				gridstr = 'grids:[' + gridarr.join(',') + ']';
-				
-				rowattr.push('height:' + rowheight);
-				rowattr.push(gridstr);
-				rowarr.push( '{' + rowattr.join(',') + '}');
+		getGridStruct : function(elem){
+			var grids = [];
+			var gridelems = elem.getElements('.grid');
+			for(var i = 0, l = gridelems.length ; i < l ; i++ ){
+				var currentgrid = gridelems[i];
+				var grid = {};
+				grid.width = currentgrid.getWidth();
+				if(currentgrid.getElement('.row')){
+					grid.rows = this.getRowStruct(currentgrid);
+				}	
+				grids.push(grid);
 			}
-			rowstr = '[' + rowarr.join(',') + ']';			
-			json = "doc:" + rowstr;
-			console.log(json);
+			return grids;
+		},
+		getRowStruct : function(elem){
+			var rows = [];
+			var rowelems = elem.getElements('.row');
+			for(var i = 0, l = rowelems.length ; i < l ; i++ ){
+				var currentrow = rowelems[i]
+				var row = {};
+				row.height = currentrow.getHeight();
+				row.grids = this.getGridStruct(currentrow);	
+				rows.push(row);
+			}
+			return rows;
+		},
+		save : function () {
+			var obj;
+			var elem = this.elem;			
+			var doc = {}; 
+			doc = $merge(doc,this.opt);
+			doc.rows = this.getRowStruct(elem);
+			console.log(doc);
+			console.log(JSON.encode(doc));			
 		}
 	});
  

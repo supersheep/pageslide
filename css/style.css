@@ -17,8 +17,8 @@ li{list-style:none;}
 .board .actionbar .action-btns{float:right;}
 .board .doc{width:100%;background:#ccc;}
 
-.vhandler{height:10px;cursor: row-resize;background:#eee url('../img/handler-v.png') no-repeat center;}
-.hhandler{width:10px;cursor: col-resize;background:#eee url('../img/handler-h.png') no-repeat center;}
+.vhandler{height:10px;cursor: row-resize;background:#ddd url('../img/handler-v.png') no-repeat center;}
+.hhandler{width:10px;cursor: col-resize;background:#ddd url('../img/handler-h.png') no-repeat center;}
 
 .gridfunc{position:absolute;left:0;background:#3d9;}
 .gridfunc .btn{float:left;}

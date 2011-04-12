@@ -4,7 +4,6 @@
 	<meta charset="UTF-8">
 	<title>PageSlider</title>
 	<script type="text/javascript" src="js/mt-core.js"></script>
-	<script type="text/javascript" src="js/mt-more.js"></script>
 	<script type="text/javascript" src="js/pg-slide.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/style.css" media="all" />
 </head>
@@ -16,6 +15,7 @@
 			<div class="actionbar">
 				<div class="action-btns">
 					<a href="javascript:;" id="jSave">save</a>
+					<a href="javascript:;" id="jGeneratePage">save</a>
 				</div>
 			</div>
 			<div class="doc" id="doc"></div>	
@@ -33,19 +33,23 @@
 		 * __Selector should be a css selector
 		**/		
 		var cfg = {
-			saveHook:'jSave',
 			doccls:'doc',
 			rowcls:'row',
 			gridcls:'grid',
-			rowmargin:50,
-			gridmargin:30,
+			rowmargin:20,
+			gridmargin:20,
+			hmin:50,
+			vmin:50,
 		};
 		
 		/* init */
 		(function (c){
 			var doc = new Doc(c);
-			$(c.saveHook).addEvent('click',function(){
+			$('jSave').addEvent('click',function(){
 				doc.save()
+			});
+			$('jGeneratePage').addEvent('click',function(){
+				doc.generatePage();
 			});
 		})(cfg);
 		
