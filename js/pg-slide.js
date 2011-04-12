@@ -43,11 +43,15 @@ var Grid = new Class({
 			var btns = {
 				slicegrid : {
 					cls : 'btnslicegrid',
-					txt : '|',
+					txt : 'ॖॗ',
 					handler : function(){
 						_this.sliceGrid();
 					}
 				}, 
+				slicerow : {
+					cls : 'btnslicerow',
+					txt : '吕'
+				},
 				moverow : {
 					cls : 'btnmoverow',
 					txt : 'm',
@@ -96,6 +100,13 @@ var Grid = new Class({
 				this.elem.setStyle('width',w+'px');
 			}
 		},
+		
+		sliceRow : function(){			
+			if(this.elem){
+				
+			}
+		},
+		
 		sliceGrid : function(){
 			var el = this.elem;	
 			var opt = this.opt;
@@ -203,7 +214,7 @@ var Row = new Class({
 		
 		removeRow : function(){
 			var el = this.elem;
-			var rownum = document.getElements('.' + this.cls).length;
+			var rownum = document.getElements('.' + this.opt.rowcls).length;
 			if( rownum > 1 ){
 				el.getNext().destroy();
 				el.destroy();	
