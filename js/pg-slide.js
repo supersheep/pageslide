@@ -3,6 +3,45 @@ var errors = {
 	cantslice : '再分就看不到啦' 
 };
 
+var Container = new Class({
+
+	fit : function(type,n){		
+		var old = this.elem['get' + type.capitalize()](),			
+			margin = {
+				width : 'gridmargin',
+				height : 'rowmargin'
+			},		
+			min = {
+				width : 'hmin',
+				height : 'vmin'
+			};			
+		var newsize, re;
+		
+		if(old){
+			newsize = ( old - this.opt[margin[type]] ) / 2;
+		}else{
+			newsize = '100%';
+		}		
+		
+		n = n || newsize;			
+		if ( n != '100%' && n < this.opt[min[type]] ){
+			alert(errors.cantslice);
+			re = false;
+		}else{
+			re = n;
+		}
+		
+		return re;
+	},
+
+
+	set : function(type,v){			
+		this.elem.setStyle(type, v=='100%' ? v : v + 'px');
+	},	
+
+
+})
+
 var Grid = new Class({
 		opt:{			
 			gridcls : 'grid', 
@@ -10,8 +49,11 @@ var Grid = new Class({
 			hhcls : 'hhandler'
 		},
 		
-		initialize : function (opt) {	
+		Extends : Container,
+		
+		initialize : function (opt,row) {
 			this.opt = opt = $merge(this.opt,opt);
+			this.parentrow = row;		
 			var cls = opt.gridcls;
 			this.elem = new Element('div', {
 					'class' : cls
@@ -43,14 +85,17 @@ var Grid = new Class({
 			var btns = {
 				slicegrid : {
 					cls : 'btnslicegrid',
-					txt : 'ॖॗ',
+					txt : '吅',
 					handler : function(){
 						_this.sliceGrid();
 					}
 				}, 
 				slicerow : {
 					cls : 'btnslicerow',
-					txt : '吕'
+					txt : '吕',
+					handler : function(){
+						_this.sliceRow();
+					}
 				},
 				moverow : {
 					cls : 'btnmoverow',
@@ -75,33 +120,37 @@ var Grid = new Class({
 				elem.inject(func);
 			}
 			func.inject(this.elem, 'top');
-		},
-		fitWidth : function(w){
-			var oldwidth = this.elem.getWidth();
-			var width, re;
-			if(oldwidth){
-				width = ( oldwidth - this.opt.gridmargin ) / 2;
-			}else{
-				width = '100%';
-			}			
-			w = w || width;			
-			if ( w != '100%' && w < this.opt.hmin ){
-				alert(errors.cantslice);
-				re = false;
-			}else{
-				re = w
-			}
-			return re;
-		},
-		setWidth : function(w){
-			if( w == '100%' ){
-				this.elem.setStyle('width',w);
-			}else{
-				this.elem.setStyle('width',w+'px');
-			}
-		},
+		},		
 		
-		sliceRow : function(){			
+		
+		sliceRow : function(){
+			var el = this.elem;
+			var parentrow = this.parentrow;
+			var hasSibling = this.elem.getSiblings('.grid').length ;
+			var opt = this.opt;
+			if( ! hasSibling){				
+				var h = parentrow.fit('height');
+				if(h){
+					parentrow.set('height',h);
+					var row = new Row(opt);
+					row.elem.inject(parentrow.elem,'after');
+					row.set('height',h);
+					var vhandler = new Vhandler(opt);
+					vhandler.elem.inject(parentrow.elem,'after');	
+				}
+			}else{
+				var h = this.fit('height');
+				if(h){
+					rowa = new Row(opt);	
+					rowa.set('height',h);
+					rowa.elem.inject(el,'bottom');					
+					var vhandler = new Vhandler(opt);
+					vhandler.elem.inject(el,'bottom');	
+					rowb = new Row(opt);
+					rowb.set('height',h);
+					rowb.elem.inject(el,'bottom');
+				}
+			}
 			if(this.elem){
 				
 			}
@@ -111,12 +160,12 @@ var Grid = new Class({
 			var el = this.elem;	
 			var opt = this.opt;
 			var w;	
-			w = this.fitWidth();
+			w = this.fit('width');
 			if(w){
-				this.setWidth(w);
+				this.set('width',w);
 				var grid = new Grid(opt);
 				grid.elem.inject(el,'after');
-				grid.setWidth(w);
+				grid.set('width',w);
 				var hhandler = new Hhandler(opt);
 				hhandler.elem.inject(el,'after');
 			}
@@ -130,6 +179,9 @@ var Row = new Class({
 			rowcls:'row',
 			rowmargin:10
 		},
+		
+		
+		Extends : Container,
 		
 		initialize : function (opt) {
 			this.opt = opt = $merge(this.opt,opt);
@@ -197,10 +249,11 @@ var Row = new Class({
 			func.inject(this.elem, 'top');
 		},
 		
+		
 		addGrid : function () {
-			var grid = new Grid(this.opt);
+			var grid = new Grid(this.opt,this);
 			grid.elem.inject(this.elem);
-			grid.setWidth(grid.fitWidth());
+			grid.set('width',grid.fit('width'));
 		},
 		
 		addRow : function (obj) {
@@ -352,13 +405,13 @@ var Doc = new Class({
 		}, 
 		getGridStruct : function(elem){
 			var grids = [];
-			var gridelems = elem.getElements('.grid');
+			var gridelems = elem.getElements('>.grid');
 			for(var i = 0, l = gridelems.length ; i < l ; i++ ){
-				var currentgrid = gridelems[i];
+				var gridelem = gridelems[i];
 				var grid = {};
-				grid.width = currentgrid.getWidth();
-				if(currentgrid.getElement('.row')){
-					grid.rows = this.getRowStruct(currentgrid);
+				grid.width = gridelem.getWidth();
+				if(gridelem.getElement('.row')){
+					grid.rows = this.getRowStruct(gridelem);
 				}	
 				grids.push(grid);
 			}
@@ -366,24 +419,86 @@ var Doc = new Class({
 		},
 		getRowStruct : function(elem){
 			var rows = [];
-			var rowelems = elem.getElements('.row');
+			var rowelems = elem.getElements('>.row');
 			for(var i = 0, l = rowelems.length ; i < l ; i++ ){
-				var currentrow = rowelems[i]
+				var rowelem = rowelems[i]
 				var row = {};
-				row.height = currentrow.getHeight();
-				row.grids = this.getGridStruct(currentrow);	
+				row.height = rowelem.getHeight();
+				row.grids = this.getGridStruct(rowelem);	
 				rows.push(row);
 			}
 			return rows;
 		},
-		save : function () {
-			var obj;
+		
+		getStruct : function (){
 			var elem = this.elem;			
 			var doc = {}; 
 			doc = $merge(doc,this.opt);
 			doc.rows = this.getRowStruct(elem);
-			console.log(doc);
-			console.log(JSON.encode(doc));			
+			this.struct = doc;
+			return this.struct;
+		},
+		
+		getRowHtml : function(obj,wrap){
+			if(obj.rows){
+				var rows = obj.rows;
+				var rowcls = this.opt.rowcls;
+				for(var i = 0 , l = rows.length ; i < l ; i++ ){
+					var row = rows[i];
+					var rowelem = new Element('div',{'class':rowcls});
+					rowelem.setStyle('height',row.height);					
+					rowelem = this.getGridHtml(row,rowelem);		
+					if( i == l-1){
+						rowelem.addClass('last');
+					}	
+					rowelem.inject(wrap);
+				}				
+			}
+			return wrap;
+		},
+		
+		getGridHtml : function(obj,wrap){
+			if(obj.grids){
+				var grids = obj.grids;
+				var gridcls = this.opt.gridcls;
+				for( var i = 0 , l = grids.length ; i < l ; i++ ){
+					var grid = grids[i];
+					var gridelem = new Element('div',{'class':gridcls});
+					gridelem.setStyle('width',grid.width);
+					girdelem = this.getRowHtml(grid,gridelem);
+					if( i == l-1){
+						gridelem.addClass('last');
+					}	
+					gridelem.inject(wrap);
+				}	
+			}
+			return wrap;
+		},
+		
+		generatePage : function (){
+			var doc = this.getStruct();
+			var rowcls = doc.rowcls,
+				rows = doc.rows,
+				doccls = doc.doccls,
+				gridcls = doc.gridcls,
+				docelem = new Element('div',{'class':doccls}),
+				body = new Element('body');
+				html = new Element('html');
+				
+				
+				
+			docelem = this.getRowHtml(doc,docelem)
+			docelem.inject(wrap);
+			
+			
+							
+			console.log(wrap.get('html'));
+		},
+					
+		save : function () {
+			var struct = this.getStruct()
+			console.log(struct);
+			console.log(JSON.encode(struct));			
 		}
 	});
  
