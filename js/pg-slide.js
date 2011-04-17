@@ -35,7 +35,7 @@ var Container = new Class({
 	},
 
 
-	set : function(type,v){			
+	size : function(type,v){			
 		this.elem.setStyle(type, v=='100%' ? v : v + 'px');
 	},	
 
@@ -131,10 +131,10 @@ var Grid = new Class({
 			if( ! hasSibling){				
 				var h = parentrow.fit('height');
 				if(h){
-					parentrow.set('height',h);
+					parentrow.size('height',h);
 					var row = new Row(opt);
 					row.elem.inject(parentrow.elem,'after');
-					row.set('height',h);
+					row.size('height',h);
 					var vhandler = new Vhandler(opt);
 					vhandler.elem.inject(parentrow.elem,'after');	
 				}
@@ -142,12 +142,12 @@ var Grid = new Class({
 				var h = this.fit('height');
 				if(h){
 					rowa = new Row(opt);	
-					rowa.set('height',h);
+					rowa.size('height',h);
 					rowa.elem.inject(el,'bottom');					
 					var vhandler = new Vhandler(opt);
 					vhandler.elem.inject(el,'bottom');	
 					rowb = new Row(opt);
-					rowb.set('height',h);
+					rowb.size('height',h);
 					rowb.elem.inject(el,'bottom');
 				}
 			}
@@ -162,10 +162,10 @@ var Grid = new Class({
 			var w;	
 			w = this.fit('width');
 			if(w){
-				this.set('width',w);
+				this.size('width',w);
 				var grid = new Grid(opt);
 				grid.elem.inject(el,'after');
-				grid.set('width',w);
+				grid.size('width',w);
 				var hhandler = new Hhandler(opt);
 				hhandler.elem.inject(el,'after');
 			}
@@ -253,13 +253,14 @@ var Row = new Class({
 		addGrid : function () {
 			var grid = new Grid(this.opt,this);
 			grid.elem.inject(this.elem);
-			grid.set('width',grid.fit('width'));
+			grid.size('width',grid.fit('width'));
 		},
 		
 		addRow : function (obj) {
 			var el = this.elem;
 			var nextvhandler = el.getNext('.vhandler');
 			var row = new Row(this.opt);
+			row.size('height',50);
 			row.elem.inject(nextvhandler,'after');
 			var vhandler = new Vhandler(this.opt);
 			vhandler.elem.inject(row.elem,'after');
@@ -309,22 +310,54 @@ var Handler = new Class({
 			this.document.addEvent('mouseup', this.end.bind(this));
 		}, 
 		move : function (event) {
-			var xchanged = event.page.x - this.startpos.x;
-			var ychanged = event.page.y - this.startpos.y;
-			if (this.mode == 'v') {
-				this.prev.setStyle('height', this.prev.size.y + ychanged);
-				if (this.next) {
-					this.next.setStyle('height', this.next.size.y - ychanged);
+		
+			var mode = this.mode;
+			var next = this.next;
+			var prev = this.prev
+			var changed = {
+				'h' : event.page.x - this.startpos.x ,
+				'v' : event.page.y - this.startpos.y
+			};
+			
+			var nprev = {
+				'h' : prev && prev.size.x + changed.h ,
+				'v' : prev && prev.size.y + changed.v
+			};
+			
+			var nnext = {
+				'h' : next && next.size.x - changed.h ,
+				'v' : next && next.size.y - changed.v
+			};
+			
+			var min = {
+				'h' : this.opt.hmin ,				
+				'v' : this.opt.vmin
+			};
+			
+			var wh = {
+				'h' : 'width' ,
+				'v' : 'height'
+			};
+			
+			var size = {
+				'h' : 'x',
+				'v' : 'y'
+			};
+			
+			
+			if( next ){
+				if( nprev[mode] > min[mode] && nnext[mode] > min[mode] ){					
+					prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );
+					next.setStyle(wh[mode],prev.size[size[mode]] - changed[mode] );
 				}
-			} else if (this.mode == 'h') {
-				var prevwidth = this.prev.size.x + xchanged;
-				var nextwidth = this.next.size.x - xchanged;
-				var hmin = this.opt.hmin;
-				if( prevwidth > hmin && nextwidth > hmin ){
-					this.prev.setStyle('width', this.prev.size.x + xchanged);
-					this.next.setStyle('width', this.next.size.x - xchanged);
+			
+			}else{
+				if( nprev[mode] > min[mode] ){				
+					prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );				
 				}
+			
 			}
+			
 		}, 
 		end : function (event) {
 			this.document.removeEvents('mousemove');
@@ -400,6 +433,7 @@ var Doc = new Class({
 		addRow : function () {
 			var row = new Row(this.opt);
 			row.elem.inject(this.elem);
+			row.size('height','100');
 			var vhandler = new Vhandler(this.opt);
 			vhandler.elem.inject(this.elem);
 		}, 
