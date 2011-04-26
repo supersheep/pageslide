@@ -1,3 +1,9 @@
+var console = console || {};
+
+console.show = function (msg){
+	$('console').set('html',msg);
+}
+
 var errors = {
 	cantremove : '再删就没啦',
 	cantslice : '再分就看不到啦' 
@@ -260,7 +266,7 @@ var Row = new Class({
 			var el = this.elem;
 			var nextvhandler = el.getNext('.vhandler');
 			var row = new Row(this.opt);
-			row.size('height',50);
+			row.size('height',100);
 			row.elem.inject(nextvhandler,'after');
 			var vhandler = new Vhandler(this.opt);
 			vhandler.elem.inject(row.elem,'after');
@@ -290,6 +296,7 @@ var Handler = new Class({
 			this.document = elem.getDocument();
 			this.unselectable();
 			elem.addEvent('mousedown', this.start.bind(this));
+			elem.addEvent('mouseup',this.end.bind(this));
 		}, 
 		unselectable:function(){
 			var el = this.elem;
@@ -344,24 +351,30 @@ var Handler = new Class({
 				'v' : 'y'
 			};
 			
-			
-			if( next ){
+			if(prev){
+				if( next ){
 				if( nprev[mode] > min[mode] && nnext[mode] > min[mode] ){					
 					prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );
-					next.setStyle(wh[mode],prev.size[size[mode]] - changed[mode] );
-				}
-			
-			}else{
-				if( nprev[mode] > min[mode] ){				
-					prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );				
-				}
-			
+					next.setStyle(wh[mode],next.size[size[mode]] - changed[mode] );
+					//console.show(  (prev.size[size[mode]] + changed[mode]) + ' , ' + (prev.size[size[mode]] - changed[mode]));		
+					//console.trace();					
+				}			
+				}else{
+					if( nprev[mode] > min[mode] ){				
+						prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );				
+						console.show(prev.size[size[mode]] + changed[mode] );
+					}
+				}				
 			}
+			
 			
 		}, 
 		end : function (event) {
 			this.document.removeEvents('mousemove');
 			this.document.removeEvents('mouseup');
+			this.prev = null;
+			this.next = null;
+			this.startpos = null;
 		}
 		
 	});
@@ -400,20 +413,6 @@ var Vhandler = new Class({
 		}
 	});
 	
-	/*
-	
-	doc:{
-		rowmargin:
-		gridmargin:
-		rows:[
-			{
-				height:f,
-				grids:[]
-			}
-		]
-	}
-	*/
-
 var Doc = new Class({
 		opt : {			
 			doccls : 'doc', 
@@ -510,25 +509,38 @@ var Doc = new Class({
 		},
 		
 		generatePage : function (){
-			var doc = this.getStruct();
+			var doc = this.struct || this.getStruct();
 			var rowcls = doc.rowcls,
 				rows = doc.rows,
 				doccls = doc.doccls,
 				gridcls = doc.gridcls,
 				docelem = new Element('div',{'class':doccls}),
-				body = new Element('body');
-				html = new Element('html');
 				
+			var wrap = new Element('div');
 				
 				
 			docelem = this.getRowHtml(doc,docelem)
 			docelem.inject(wrap);
 			
-			
-							
-			console.log(wrap.get('html'));
+			var req = new Request({
+				data: wrap.get('html'), 
+				method: 'post',
+				url: '';
+			})
+			req.send();
+			return wrap.get('html');
 		},
-					
+
+		generateEditingPage : function (){
+			
+		
+		}	
+		
+		load : function (json){
+			var 
+		
+		}
+		
 		save : function () {
 			var struct = this.getStruct()
 			console.log(struct);
