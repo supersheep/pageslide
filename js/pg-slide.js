@@ -9,6 +9,9 @@ var errors = {
 	cantslice : '再分就看不到啦' 
 };
 
+var page ={name:null};
+var ajaxurl = 'ajax.php?action={action}&name={name}';
+
 var Container = new Class({
 
 	fit : function(type,n){		
@@ -429,6 +432,7 @@ var Doc = new Class({
 			this.elem = document.getElement('.' + cls);
 			this.addRow();
 		}, 
+			
 		addRow : function () {
 			var row = new Row(this.opt);
 			row.elem.inject(this.elem);
@@ -436,6 +440,22 @@ var Doc = new Class({
 			var vhandler = new Vhandler(this.opt);
 			vhandler.elem.inject(this.elem);
 		}, 
+		
+		//返回容器内Row结构	
+		getRowStruct : function(elem){
+			var rows = [];
+			var rowelems = elem.getElements('>.row');
+			for(var i = 0, l = rowelems.length ; i < l ; i++ ){
+				var rowelem = rowelems[i]
+				var row = {};
+				row.height = rowelem.getHeight();
+				row.grids = this.getGridStruct(rowelem);	
+				rows.push(row);
+			}
+			return rows;
+		},
+		
+		//返回容器内Grid结构
 		getGridStruct : function(elem){
 			var grids = [];
 			var gridelems = elem.getElements('>.grid');
@@ -450,19 +470,8 @@ var Doc = new Class({
 			}
 			return grids;
 		},
-		getRowStruct : function(elem){
-			var rows = [];
-			var rowelems = elem.getElements('>.row');
-			for(var i = 0, l = rowelems.length ; i < l ; i++ ){
-				var rowelem = rowelems[i]
-				var row = {};
-				row.height = rowelem.getHeight();
-				row.grids = this.getGridStruct(rowelem);	
-				rows.push(row);
-			}
-			return rows;
-		},
-		
+					
+		// @return json 返回文档结构 
 		getStruct : function (){
 			var elem = this.elem;			
 			var doc = {}; 
@@ -472,6 +481,7 @@ var Doc = new Class({
 			return this.struct;
 		},
 		
+		//返回容器内 Row HTML 结构 
 		getRowHtml : function(obj,wrap){
 			if(obj.rows){
 				var rows = obj.rows;
@@ -490,6 +500,7 @@ var Doc = new Class({
 			return wrap;
 		},
 		
+		//返回容器内 Grid 结构		
 		getGridHtml : function(obj,wrap){
 			if(obj.grids){
 				var grids = obj.grids;
@@ -508,7 +519,8 @@ var Doc = new Class({
 			return wrap;
 		},
 		
-		generatePage : function (){
+		//生成文档html结构
+		getPageHtml : function (){
 			var doc = this.struct || this.getStruct();
 			var rowcls = doc.rowcls,
 				rows = doc.rows,
@@ -516,35 +528,52 @@ var Doc = new Class({
 				gridcls = doc.gridcls,
 				docelem = new Element('div',{'class':doccls}),
 				
-			var wrap = new Element('div');
+				wrap = new Element('div');
 				
 				
 			docelem = this.getRowHtml(doc,docelem)
-			docelem.inject(wrap);
-			
-			var req = new Request({
-				data: wrap.get('html'), 
-				method: 'post',
-				url: '';
-			})
-			req.send();
+			docelem.inject(wrap);			
 			return wrap.get('html');
+		},	
+		
+		generatePage:function(){
+			var name = page.name = page.name || prompt('please give this page a name ;)');
+			this.save(name);
+			var req = new Request({
+				url:'ajax.php?action=generatepage&name='+ name , 
+				method: 'post',
+				onComplete: function(e){
+					console.log(e);		
+				}
+			}).send('data=' + this.getPageHtml());
 		},
+		
 
+		//生成
 		generateEditingPage : function (){
 			
 		
-		}	
+		},	
 		
 		load : function (json){
-			var 
-		
-		}
+					
+		},		
 		
 		save : function () {
-			var struct = this.getStruct()
-			console.log(struct);
-			console.log(JSON.encode(struct));			
+			var struct = this.getStruct();
+			var args = {action:'generatepage',name:name}
+			var req = new Request({
+				url: ajaxurl.substitute(args), 
+				method: 'post',
+				onComplete: function(e){
+					console.log(e);		
+				}
+			}).send('data=' + this.getPageHtml());
+			
+			//console.log(struct);
+			//console.log(JSON.encode(struct));			
 		}
 	});
+ 
+ 	
  

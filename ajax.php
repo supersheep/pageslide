@@ -1,30 +1,35 @@
 <?php
 
+
 	$action = @$_GET['action'];
 	if(!isset($action)){	
-		echo 'arguments error';
+		die('arguments error');
 	}else{	
 		switch($action){
-			case 'generatepage'	: generatePage($id);
-			case 'savepage'		: savepage();
-			case 'other'		: echo 'other';
-			default				: echo 'no such action';
+			case 'generatepage'	: generatePage();break;
+			case 'savepage'		: save();break;
+			case 'other'		: echo 'other';break;
+			default				: echo 'no such action';break;
 		}
 	}
 	
-	function generatePage($id){
-		
-	
+	function generatePage(){
+		$name = @$_GET['name'];
+		$data = @$_POST['data'];
+		if(!isset($name))die('arguments error, $name required');
+		if(!isset($data))die('arguments error, $data required');
+		echo $data;
 	}
 	
-	function savepage(){
-		if(isset($_POST['page'])){
-			echo $page;
-			
-		}
-	
-	
+	function save(){
+		$name = @$_GET['name'];
+		$data = @$_POST['data'];		
+		if(!isset($name))die('arguments error, $name required');
+		if(!isset($data))die('arguments error, $data required');
+		if(isset($_POST['data'])){
+			echo $data;			
+		}	
 	}
-	
+
 
 ?>
