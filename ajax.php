@@ -24,7 +24,7 @@
 	function save(){
 		$name = @$_GET['name'];
 		$data = @$_POST['data'];		
-		if(!isset($name))die('arguments error, $name required');
+		if(<!></!>isset($name))die('arguments error, $name required');
 		if(!isset($data))die('arguments error, $data required');
 		if(isset($_POST['data'])){
 			echo $data;			
