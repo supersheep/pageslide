@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<script type="text/javascript" src="js/mt-core.js"></script>	
+</head>
+<body>
+	<input type="text" id="text" />
+	<div id="btnsure">确定</div>
+	<script type="text/javascript">
+		function urlparam(){
+			var obj={};
+			var urlparams = location.href.split('?')[1];
+			if(urlparams){
+				var params = urlparams.split('&');
+				for( var i = 0 , l = params.length ; i < l ; i++ ){
+					var keyvalue = params[i].split('=');
+					obj[keyvalue[0]] = keyvalue[1];
+				}
+			}
+			return obj;
+		}
+	
+	
+		var id = urlparam().id;
+		var reportname = urlparam().reportname;
+		var ready = urlparam().ready;
+		var btnsure = $('btnsure');
+		btnsure.addEvent('click',function(){
+			var parent = window.opener;
+			var module = parent.document.getElementById(id);
+			var returnvalue = $('text').get('value');
+			module.set('html',returnvalue);
+			parent.ready += 1;
+			window.opener = null;
+			window.close()
+		});
+	</script>
+</body>
+</html>

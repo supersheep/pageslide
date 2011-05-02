@@ -1,0 +1,33 @@
+/* reset rules */
+div,p,h1,h2,h3,ul,ol,li,a,form,input,table,th,td{margin:0;padding:0}
+a{text-decoration:none;cursor:pointer;}
+fieldset,img{border:0;}
+table{border-collapse:collapse;border-spacing:0;}
+li{list-style:none;}
+
+/* global */
+.clear{clear:both;}
+.hide{display:none;}
+
+#console{position:absolute;}
+
+/* the grid system */
+.doc{}
+.row{background:#fff;position:relative;}
+.row:after{display:block;clear:both;content:'';}
+.grid{background:#fff;position:relative;}
+.grid,.hhandler{float:left;height:100%;}
+
+
+
+/* page ui widgets */
+.wrapper{margin:0 auto;width:800px;}
+.status{position:absolute;}		
+.board{width:100%;}
+
+
+/* board and actionbar */
+.board .actionbar{}
+.board .actionbar:after{content:'';clear:both;display:block;}
+.board .actionbar .action-btns{float:right;}
+.board .doc{width:100%;border:1px solid #ccc;}

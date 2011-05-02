@@ -1,16 +1,13 @@
-var console = console || {};
+var PageSlide = {};
 
-console.show = function (msg){
-	$('console').set('html',msg);
-}
+(function(P){
 
-var errors = {
+var msg = {
 	cantremove : '再删就没啦',
-	cantslice : '再分就看不到啦' 
+	cantslice : '再分就看不到啦',
+	setname : '给你的模板起个名字吧：'
 };
 
-var page ={name:null};
-var ajaxurl = 'ajax.php?action={action}&name={name}';
 
 var Container = new Class({
 
@@ -34,7 +31,7 @@ var Container = new Class({
 		
 		n = n || newsize;			
 		if ( n != '100%' && n < this.opt[min[type]] ){
-			alert(errors.cantslice);
+			alert(msg.cantslice);
 			re = false;
 		}else{
 			re = n;
@@ -152,12 +149,12 @@ var Grid = new Class({
 				if(h){
 					rowa = new Row(opt);	
 					rowa.size('height',h);
-					rowa.elem.inject(el,'bottom');					
+					rowa.elem.inject(el);					
 					var vhandler = new Vhandler(opt);
-					vhandler.elem.inject(el,'bottom');	
+					vhandler.elem.inject(el);	
 					rowb = new Row(opt);
 					rowb.size('height',h);
-					rowb.elem.inject(el,'bottom');
+					rowb.elem.inject(el);
 				}
 			}
 			if(this.elem){
@@ -282,7 +279,7 @@ var Row = new Class({
 				el.getNext().destroy();
 				el.destroy();	
 			}else{
-				alert(errors.cantremove);
+				alert(msg.cantremove);
 			}
 		}
 	});
@@ -365,7 +362,7 @@ var Handler = new Class({
 				}else{
 					if( nprev[mode] > min[mode] ){				
 						prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );				
-						console.show(prev.size[size[mode]] + changed[mode] );
+						//console.show(prev.size[size[mode]] + changed[mode] );
 					}
 				}				
 			}
@@ -416,7 +413,7 @@ var Vhandler = new Class({
 		}
 	});
 	
-var Doc = new Class({
+P.Doc = new Class({
 		opt : {			
 			doccls : 'doc', 
 			rowcls: 'row',
@@ -427,6 +424,7 @@ var Doc = new Class({
 		
 		initialize : function (opt) {
 			this.opt = opt = $merge(this.opt,opt);
+			this.ajaxurl = 'ajax.php?action={action}&name={name}';
 			var cls = opt.doccls;
 			this.rowmargin = opt.rowmargin;
 			this.elem = document.getElement('.' + cls);
@@ -441,86 +439,95 @@ var Doc = new Class({
 			vhandler.elem.inject(this.elem);
 		}, 
 		
-		//返回容器内Row结构	
-		getRowStruct : function(elem){
-			var rows = [];
-			var rowelems = elem.getElements('>.row');
-			for(var i = 0, l = rowelems.length ; i < l ; i++ ){
-				var rowelem = rowelems[i]
-				var row = {};
-				row.height = rowelem.getHeight();
-				row.grids = this.getGridStruct(rowelem);	
-				rows.push(row);
-			}
-			return rows;
-		},
-		
-		//返回容器内Grid结构
-		getGridStruct : function(elem){
-			var grids = [];
-			var gridelems = elem.getElements('>.grid');
-			for(var i = 0, l = gridelems.length ; i < l ; i++ ){
-				var gridelem = gridelems[i];
-				var grid = {};
-				grid.width = gridelem.getWidth();
-				if(gridelem.getElement('.row')){
-					grid.rows = this.getRowStruct(gridelem);
-				}	
-				grids.push(grid);
-			}
-			return grids;
-		},
-					
+							
 		// @return json 返回文档结构 
 		getStruct : function (){
+			//返回容器内Row结构	
+			function getRowStruct(elem){
+				var rows = [];
+				var rowelems = elem.getChildren('.row');
+				for(var i = 0, l = rowelems.length ; i < l ; i++ ){
+					var rowelem = rowelems[i]
+					var row = {};
+					row.height = rowelem.getHeight();
+					row.grids = getGridStruct(rowelem);	
+					rows.push(row);
+				}
+				return rows;
+			};
+		
+			//返回容器内Grid结构
+			function getGridStruct(elem){
+				var grids = [];
+				var gridelems = elem.getElements('>.grid');
+				for(var i = 0, l = gridelems.length ; i < l ; i++ ){
+					var gridelem = gridelems[i];
+					var grid = {};
+					grid.width = gridelem.getWidth();
+					if(gridelem.getElement('.row')){
+						grid.rows = getRowStruct(gridelem);
+					}	
+					grids.push(grid);
+				}
+				return grids;
+			};	
+				
 			var elem = this.elem;			
 			var doc = {}; 
 			doc = $merge(doc,this.opt);
-			doc.rows = this.getRowStruct(elem);
+			doc.rows = getRowStruct(elem);
 			this.struct = doc;
 			return this.struct;
 		},
 		
 		//返回容器内 Row HTML 结构 
-		getRowHtml : function(obj,wrap){
-			if(obj.rows){
-				var rows = obj.rows;
-				var rowcls = this.opt.rowcls;
-				for(var i = 0 , l = rows.length ; i < l ; i++ ){
-					var row = rows[i];
-					var rowelem = new Element('div',{'class':rowcls});
-					rowelem.setStyle('height',row.height);					
-					rowelem = this.getGridHtml(row,rowelem);		
-					if( i == l-1){
-						rowelem.addClass('last');
-					}	
-					rowelem.inject(wrap);
-				}				
-			}
-			return wrap;
-		},
 		
-		//返回容器内 Grid 结构		
-		getGridHtml : function(obj,wrap){
-			if(obj.grids){
-				var grids = obj.grids;
-				var gridcls = this.opt.gridcls;
-				for( var i = 0 , l = grids.length ; i < l ; i++ ){
-					var grid = grids[i];
-					var gridelem = new Element('div',{'class':gridcls});
-					gridelem.setStyle('width',grid.width);
-					girdelem = this.getRowHtml(grid,gridelem);
-					if( i == l-1){
-						gridelem.addClass('last');
-					}	
-					gridelem.inject(wrap);
-				}	
-			}
-			return wrap;
-		},
 		
-		//生成文档html结构
+		//生成文档html结构，doc内的结构
 		getPageHtml : function (){
+			var _this = this;
+			function getRowHtml( obj , wrap ){
+				if(obj.rows){
+					var rows = obj.rows;
+					var rowcls = _this.opt.rowcls;
+					for(var i = 0 , l = rows.length ; i < l ; i++ ){
+						var row = rows[i];
+						var rowelem = new Element('div',{'class':rowcls});
+						rowelem.setStyle('height',row.height);					
+						rowelem = getGridHtml(row,rowelem);		
+						if( i == l-1){
+							rowelem.addClass('last');
+						}	
+						rowelem.inject( wrap );
+					}				
+				}
+				return wrap;
+			};	
+ 		
+			//返回容器内 Grid 结构		
+			function getGridHtml(obj,wrap){
+				if(obj.grids){
+					var grids = obj.grids;
+					var gridcls = _this.opt.gridcls;
+					for( var i = 0 , l = grids.length ; i < l ; i++ ){
+					var grid = grids[i];
+						var gridelem = new Element('div',{'class':gridcls});
+						gridelem.setStyle('width',grid.width);
+						girdelem = getRowHtml(grid,gridelem);
+						if( i == l-1){
+							gridelem.addClass('last');
+						}	
+						if( !gridelem.getElements('.row').length ){
+							(new Element('div',{'class':'module'})).inject(gridelem);
+						}
+						gridelem.inject(wrap);
+					}	
+				}
+				return wrap;
+			};
+			
+		
+		
 			var doc = this.struct || this.getStruct();
 			var rowcls = doc.rowcls,
 				rows = doc.rows,
@@ -528,31 +535,93 @@ var Doc = new Class({
 				gridcls = doc.gridcls,
 				docelem = new Element('div',{'class':doccls}),
 				
-				wrap = new Element('div');
+				//wrap = new Element('div');				
 				
-				
-			docelem = this.getRowHtml(doc,docelem)
-			docelem.inject(wrap);			
-			return wrap.get('html');
+			docelem = getRowHtml(doc,docelem);
+			return docelem;
 		},	
 		
+		getEditingHtml : function () {
+			var _this = this;
+			function getRowHtml( obj , wrap ){
+				if(obj.rows){
+					var rows = obj.rows;
+					var rowcls = _this.opt.rowcls;
+					for(var i = 0 , l = rows.length ; i < l ; i++ ){
+						var row = rows[i];
+						var rowelem = new Row();
+						var elem = rowelem.elem;
+						elem.setStyle('height',row.height);					
+						elem = getGridHtml(row,rowelem);	
+						elem.inject( wrap );							
+						if( i != l-1){								
+							var hhandler = new Hhandler();
+							hhandler.elem.inject(wrap);
+						}	
+					}				
+				}
+				return wrap;
+			};	
+ 		
+			//返回容器内 Grid 结构		
+			function getGridHtml(obj,wrap){
+				if(obj.grids){
+					var grids = obj.grids;
+					var gridcls = _this.opt.gridcls;
+					for( var i = 0 , l = grids.length ; i < l ; i++ ){
+					var grid = grids[i];
+						var gridelem = new Element('div',{'class':gridcls});
+						gridelem.setStyle('width',grid.width);
+						girdelem = getRowHtml(grid,gridelem);
+						if( i == l-1){
+							gridelem.addClass('last');
+						}	
+						if( !gridelem.getElements('.row').length ){
+							(new Element('div',{'class':'module'})).inject(gridelem);
+						}
+						gridelem.inject(wrap);
+					}	
+				}
+				return wrap;
+			};
+			
+		
+		
+			var doc = this.struct || this.getStruct();
+			var rowcls = doc.rowcls,
+				rows = doc.rows,
+				doccls = doc.doccls,
+				gridcls = doc.gridcls,
+				docelem = new Element('div',{'class':doccls}),
+				
+				//wrap = new Element('div');				
+				
+			docelem = getRowHtml(doc,docelem);
+			return docelem;
+		},
+		
 		generatePage:function(){
-			var name = page.name = page.name || prompt('please give this page a name ;)');
-			this.save(name);
-			var req = new Request({
-				url:'ajax.php?action=generatepage&name='+ name , 
+			var finaled,name,args;			
+			name = pagename = pagename || prompt(msg.setname);
+			if(!name)return;
+			args = {action:'generatepage',name:name}
+			this.save();
+			finaled = this.getPageHtml();
+			new Request({
+				url:this.ajaxurl.substitute(args), 
 				method: 'post',
 				onComplete: function(e){
 					console.log(e);		
 				}
-			}).send('data=' + this.getPageHtml());
-		},
+			}).send('data=' + finaled.toHtml());
+			finaled.replaces(this.elem);
+			$('status').set('href','css/final.css');
+			Do('js/addbtn.js');
+		},		
 		
-
 		//生成
 		generateEditingPage : function (){
-			
-		
+					
 		},	
 		
 		load : function (json){
@@ -560,20 +629,24 @@ var Doc = new Class({
 		},		
 		
 		save : function () {
-			var struct = this.getStruct();
-			var args = {action:'generatepage',name:name}
-			var req = new Request({
-				url: ajaxurl.substitute(args), 
+			var struct,name,args;
+
+			struct = this.getStruct();			
+			name = pagename = pagename || prompt(msg.setname);
+			args = {action:'save',name:name}
+			new Request({
+				url: this.ajaxurl.substitute(args), 
 				method: 'post',
 				onComplete: function(e){
 					console.log(e);		
 				}
-			}).send('data=' + this.getPageHtml());
+			}).send('data=' + JSON.encode(this.getStruct()));
 			
 			//console.log(struct);
 			//console.log(JSON.encode(struct));			
 		}
 	});
+})(PageSlide);
  
  	
  

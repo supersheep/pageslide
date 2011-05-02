@@ -1,0 +1,14 @@
+/*  final */
+
+
+/* don't touch this! */
+.row{margin-bottom:20px;}
+.grid{margin-right:20px;}
+.last{margin:0;}
+.module{height:100%;}
+/* edit this whatever you like */
+
+
+.module{background-color:#eee;border:5px solid #412;}
+
+.module .btn{width:50px;text-align:center;margin:20px auto;padding:5px;background:#39d;cursor:pointer;}

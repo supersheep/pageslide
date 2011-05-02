@@ -1,0 +1,12 @@
+/*  editing */
+
+.vhandler{height:10px;cursor: row-resize;background:#ddd url('../img/handler-v.png') no-repeat center;}
+.hhandler{width:10px;cursor: col-resize;background:#ddd url('../img/handler-h.png') no-repeat center;}
+
+.gridfunc{position:absolute;left:0;background:#3d9;}
+.gridfunc .btn{float:left;}
+.rowfunc{position:absolute;width:20px;right:-20px;background-color:#39d;}
+.rowfunc .btn{float:left;}
+
+
+.btn{margin:0 5px;display:block;}

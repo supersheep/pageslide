@@ -4,8 +4,10 @@
 	<meta charset="UTF-8">
 	<title>PageSlider</title>
 	<script type="text/javascript" src="js/mt-core.js"></script>
+	<script type="text/javascript" src="js/base.js"></script>
 	<script type="text/javascript" src="js/pg-slide.js"></script>
-	<link rel="stylesheet" type="text/css" href="css/style.css" media="all" />
+	<link id="base" rel="stylesheet" type="text/css" href="css/base.css" media="all" />
+	<link id="status" rel="stylesheet" type="text/css" href="css/edit.css" media="all" />
 </head>
 <body>
 
@@ -44,18 +46,17 @@
 			vmin:50,
 		};
 		
-		/* init */
-		(function (c){
-			var doc = new Doc(c);
-			$('jSave').addEvent('click',function(){
-				doc.save()
-			});
-			$('jGeneratePage').addEvent('click',function(){
-				doc.generatePage();
-			});
-		})(cfg);
+		var pagename = null;
 		
-		//new Drag($$('.drag')[0],{limit:{x:[100,300],y:[120,120]}})
+		/* init */
+		var doc = new PageSlide.Doc(cfg);
+		$('jSave').addEvent('click',function(){
+			doc.save()
+		});
+		$('jGeneratePage').addEvent('click',function(){
+			doc.generatePage();
+		});
+		
 	</script>
 </body>
 </html>
