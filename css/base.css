@@ -21,7 +21,7 @@ li{list-style:none;}
 
 
 /* page ui widgets */
-.wrapper{margin:0 auto;width:800px;}
+.wrapper{margin:0 auto;width:600px;}
 .status{position:absolute;}		
 .board{width:100%;}
 
@@ -30,4 +30,4 @@ li{list-style:none;}
 .board .actionbar{}
 .board .actionbar:after{content:'';clear:both;display:block;}
 .board .actionbar .action-btns{float:right;}
-.board .doc{width:100%;border:1px solid #ccc;}
+.board .doc{width:100%;}

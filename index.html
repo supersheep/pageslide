@@ -16,7 +16,7 @@
 	<div class="wrapper">
 		<div class="status"></div>	
 		<div class="board">		
-			<div class="actionbar">
+			<div class="actionbar" id="actionbar">
 				<div class="action-btns">
 					<a href="javascript:;" id="jSave">save</a>
 					<a href="javascript:;" id="jGeneratePage">generate</a>
@@ -40,8 +40,8 @@
 			doccls:'doc',
 			rowcls:'row',
 			gridcls:'grid',
-			rowmargin:20,
-			gridmargin:20,
+			rowmargin:15,
+			gridmargin:15,
 			hmin:50,
 			vmin:50,
 		};
@@ -50,11 +50,14 @@
 		
 		/* init */
 		var doc = new PageSlide.Doc(cfg);
-		$('jSave').addEvent('click',function(){
-			doc.save()
-		});
-		$('jGeneratePage').addEvent('click',function(){
+		
+		
+		Delegate('actionbar','#jGeneratePage','click',function(e){
 			doc.generatePage();
+		});
+		
+		Delegate('actionbar','#jSave','click',function(e){
+			doc.save();
 		});
 		
 	</script>

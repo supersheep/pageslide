@@ -4,7 +4,7 @@ var PageSlide = {};
 
 var msg = {
 	cantremove : '再删就没啦',
-	cantslice : '再分就看不到啦',
+	cantslice : '宽度或高度不足，无法再切割了',
 	setname : '给你的模板起个名字吧：'
 };
 
@@ -101,13 +101,6 @@ var Grid = new Class({
 					txt : '吕',
 					handler : function(){
 						_this.sliceRow();
-					}
-				},
-				moverow : {
-					cls : 'btnmoverow',
-					txt : 'm',
-					handler : function (obj) {
-						console.log(obj)
 					}
 				}
 			};
@@ -223,13 +216,6 @@ var Row = new Class({
 						_this.addRow();
 					}
 				}, 
-				moverow : {
-					cls : 'btnmoverow',
-					txt : 'm',
-					handler : function (obj) {
-					
-					}
-				},
 				removerow : {
 					cls : 'btnremoverow',
 					txt : '-',
@@ -533,11 +519,11 @@ P.Doc = new Class({
 				rows = doc.rows,
 				doccls = doc.doccls,
 				gridcls = doc.gridcls,
-				docelem = new Element('div',{'class':doccls}),
+				docelem = new Element('div',{'class':doccls});
 				
 				//wrap = new Element('div');				
-				
-			docelem = getRowHtml(doc,docelem);
+				docelem.set('id',doccls);
+				docelem = getRowHtml(doc,docelem);
 			return docelem;
 		},	
 		
@@ -592,11 +578,11 @@ P.Doc = new Class({
 				rows = doc.rows,
 				doccls = doc.doccls,
 				gridcls = doc.gridcls,
-				docelem = new Element('div',{'class':doccls}),
+				docelem = new Element('div',{'class':doccls});
 				
-				//wrap = new Element('div');				
-				
-			docelem = getRowHtml(doc,docelem);
+				//wrap = new Element('div');	
+				docelem.set('id',doccls);
+				docelem = getRowHtml(doc,docelem);
 			return docelem;
 		},
 		
@@ -621,7 +607,7 @@ P.Doc = new Class({
 		
 		//生成
 		generateEditingPage : function (){
-					
+				
 		},	
 		
 		load : function (json){

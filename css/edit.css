@@ -1,5 +1,7 @@
 /*  editing */
 
+.board .doc{border:1px solid #ccc;}
+
 .vhandler{height:10px;cursor: row-resize;background:#ddd url('../img/handler-v.png') no-repeat center;}
 .hhandler{width:10px;cursor: col-resize;background:#ddd url('../img/handler-h.png') no-repeat center;}
 
