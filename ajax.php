@@ -1,5 +1,7 @@
 <?php
-
+	
+	include 'db.php';
+	
 	$action = @$_GET['action'];
 	if(!isset($action)){	
 		die('arguments error');
@@ -8,6 +10,8 @@
 			case 'generatepage'	: generatePage();break;
 			case 'save'			: save();break;
 			case 'savepage'		: savePage();break;
+			case 'list'			: listTemplete();break;
+			case 'load'			: load();break;
 			case 'other'		: echo 'other';break;
 			default				: echo 'no such action';break;
 		}
@@ -33,8 +37,23 @@
 		echo 'generated!';
 	}
 	
+	function listTemplete(){
+		$name = @$_GET['name'];		
+		if(!isset($name))die('arguments error, $name required');
+		
+		$array = array();
+		foreach(find('name') as $v){
+			array_push( $array , $v['name'] );
+		}
+		echo json_encode($array);
+	}
 	
-	
+	function load(){		
+		$name = @$_GET['name'];		
+		if(!isset($name))die('arguments error, $name required');		
+		$a = find('data','name="'.$name.'"');
+		echo $a[0][0];
+	}
 	
 	function save(){
 		$name = @$_GET['name'];
@@ -42,7 +61,16 @@
 		if(!isset($name))die('arguments error, $name required');
 		if(!isset($data))die('arguments error, $data required');
 		if(isset($_POST['data'])){
-			echo $data;			
+			$array = array(
+				'name'=>$name,
+				'data'=>$data
+			);
+			if(has('name',$name)){
+				update($array,array('name'=>$name));
+			}else{
+				insert($array);
+			}
+			echo '{code:200,msg:success}';	
 		}	
 	}
 

@@ -18,6 +18,7 @@
 		<div class="board">		
 			<div class="actionbar" id="actionbar">
 				<div class="action-btns">
+					<a href="javascript:;" id="jLoad">load</a>
 					<a href="javascript:;" id="jSave">save</a>
 					<a href="javascript:;" id="jGeneratePage">generate</a>
 				</div>
@@ -28,6 +29,9 @@
 	
 	</div>
 
+	<div id="listbox">
+		<ul></ul>
+	</div>
 	<!-- div class="drag"></div -->
 	<script type="text/javascript">				
 		
@@ -52,8 +56,13 @@
 		var doc = new PageSlide.Doc(cfg);
 		
 		
-		Delegate('actionbar','#jGeneratePage','click',function(e){
+		
+		Delegate('actionbar','#jGeneratePage','click',function(){
 			doc.generatePage();
+		});		
+		
+		Delegate('actionbar','#jLoad','click',function(){		
+			doc.showTempletes();
 		});
 		
 		Delegate('actionbar','#jSave','click',function(e){

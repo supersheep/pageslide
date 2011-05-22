@@ -132,6 +132,7 @@ var Grid = new Class({
 				if(h){
 					parentrow.size('height',h);
 					var row = new Row(opt);
+					row.addGrid();
 					row.elem.inject(parentrow.elem,'after');
 					row.size('height',h);
 					var vhandler = new Vhandler(opt);
@@ -141,11 +142,13 @@ var Grid = new Class({
 				var h = this.fit('height');
 				if(h){
 					rowa = new Row(opt);	
+					rowa.addGrid();
 					rowa.size('height',h);
 					rowa.elem.inject(el);					
 					var vhandler = new Vhandler(opt);
 					vhandler.elem.inject(el);	
 					rowb = new Row(opt);
+					rowb.addGrid();
 					rowb.size('height',h);
 					rowb.elem.inject(el);
 				}
@@ -189,7 +192,7 @@ var Row = new Class({
 					'class' : cls
 				});	
 			this.showhideBtn();
-			this.addGrid();
+			//this.addGrid();
 			this.prepareFunc();
 		}, 
 		
@@ -252,6 +255,7 @@ var Row = new Class({
 			var el = this.elem;
 			var nextvhandler = el.getNext('.vhandler');
 			var row = new Row(this.opt);
+			row.addGrid();
 			row.size('height',100);
 			row.elem.inject(nextvhandler,'after');
 			var vhandler = new Vhandler(this.opt);
@@ -419,6 +423,7 @@ P.Doc = new Class({
 			
 		addRow : function () {
 			var row = new Row(this.opt);
+			row.addGrid();
 			row.elem.inject(this.elem);
 			row.size('height','100');
 			var vhandler = new Vhandler(this.opt);
@@ -536,6 +541,7 @@ P.Doc = new Class({
 					for(var i = 0 , l = rows.length ; i < l ; i++ ){
 						var row = rows[i];
 						var rowelem = new Row();
+						rowelem.addGrid();
 						var elem = rowelem.elem;
 						elem.setStyle('height',row.height);					
 						elem = getGridHtml(row,rowelem);	
@@ -610,9 +616,85 @@ P.Doc = new Class({
 				
 		},	
 		
-		load : function (json){
-					
-		},		
+		showTempletes : function(){				
+			args = {action:'list'};
+			new Request({
+				url: this.ajaxurl.substitute(args), 
+				onComplete: function(msg){
+					var array = JSON.decode(msg);
+					var listbox = $('listbox');
+					var top = window.getScroll().y + 50;
+					var left = ( window.getWidth() - 500 )/2;
+					var ul = listbox.getElement('ul').empty();
+					listbox.setStyles({'top':top + 'px' , 'left':left + 'px'});
+					listbox.addClass('show');
+					for( var i=0,l=array.length ; i < l ; i++ ){
+						var li = new Element('li').inject(ul);
+						var a = new Element('a').set({'html':array[i],'href':'javascript:;'}).inject(li);						
+					}
+					Delegate(listbox,'a','click',function(e){
+						var name = e.target.get('html');
+						doc.load(name);
+						pagename = name;
+						$('listbox').removeClass('show');					
+					});
+				}
+			}).send();
+		},
+		
+		load : function (name){
+			var args = {action:'load','name':name};
+			new Request({
+				url: this.ajaxurl.substitute(args),
+				onComplete: function(json){
+					json = JSON.decode(json);
+					doc.makeUI(json);
+					doc.struct = json;
+				}
+			}).send();
+		},
+		
+		makeUI :function(json){			
+			function makeRowUI(wrapper,rows,opt){
+				for(var i = 0, l = rows.length; i < l ; i++ ){
+					var row = new Row(opt);
+					row.size('height',rows[i]['height']);
+					if(rows[i]['grids']){				
+						row.elem = makeGridUI(row.elem,rows[i]['grids'],opt);
+					}
+					row.elem.inject(wrapper);
+					if( row.elem.getParent() == $('doc') ||  //最外层的元素
+						(row.elem.getParent()!=$('doc')&& i < l-1) ){	//或者不是最后一个内层元素					
+						var vhandler = new Vhandler(opt);
+						vhandler.elem.inject(row.elem,'after');
+					}
+				}
+				return wrapper;
+			}
+			
+			function makeGridUI(wrapper,grids,opt){
+				for(var i = 0 , l = grids.length ; i < l ; i++ ){
+					var grid = new Grid(opt);
+					grid.size('width',grids[i]['width']);
+					if(grids[i]['rows']){
+						grid.elem = makeRowUI(grid.elem,grids[i]['rows'],opt);
+					}
+					grid.elem.inject(wrapper);
+					if(i<l-1){
+						var hhandler = new Hhandler(opt);
+						hhandler.elem.inject(grid.elem,'after');
+					}					
+				}
+				return wrapper;
+			}
+			
+			this.opt = json;
+			var rowmargin = json.rowmargin;
+			var gridmargin = json.gridmargin;
+			var rows = json.rows;
+			var ele = makeRowUI(this.elem.empty(),rows,this.opt);
+			ele.replaces(this.elem);
+		},
 		
 		save : function () {
 			var struct,name,args;
