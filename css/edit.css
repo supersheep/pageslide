@@ -12,7 +12,3 @@
 
 
 .btn{margin:0 5px;display:block;}
-
-#listbox{display:none;width:500px;position:absolute;padding:20px;border-radius:10px;background-color:#fff;border:1px solid #ccc;}
-#listbox.show{display:block;}
-#listbox li{float:left;width:145px;margin:10px 5px;}

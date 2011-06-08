@@ -9,7 +9,6 @@ li{list-style:none;}
 .clear{clear:both;}
 .hide{display:none;}
 
-#console{position:absolute;}
 
 /* the grid system */
 .doc{}
@@ -30,4 +29,19 @@ li{list-style:none;}
 .board .actionbar{}
 .board .actionbar:after{content:'';clear:both;display:block;}
 .board .actionbar .action-btns{float:right;}
+
+.action-btns a{display:block;width:32px;height:32px;float:left;background:#fff;background-repeat:no-repeat;text-indent:-999px;}
+.action-btns .new{background-image:url('../img/new.png');}
+.action-btns .load{background-image:url('../img/load.png');}
+.action-btns .save{background-image:url('../img/save.png');}
+.action-btns .edit{background-image:url('../img/edit.png');}
+.action-btns .preview{background-image:url('../img/preview.png');}
+.action-btns .generate{background-image:url('../img/print.png');}
 .board .doc{width:100%;}
+
+
+
+
+#listbox{display:none;width:500px;position:absolute;padding:20px;border-radius:10px;background-color:#fff;border:1px solid #ccc;}
+#listbox.show{display:block;}
+#listbox li{float:left;width:145px;margin:10px 5px;}

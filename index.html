@@ -18,9 +18,11 @@
 		<div class="board">		
 			<div class="actionbar" id="actionbar">
 				<div class="action-btns">
-					<a href="javascript:;" id="jLoad">load</a>
-					<a href="javascript:;" id="jSave">save</a>
-					<a href="javascript:;" id="jGeneratePage">generate</a>
+					<a href="#" class="new">new</a>
+					<a href="#" class="load">load</a>
+					<a href="#" class="save">save</a>
+					<a href="#" class="preview">preview</a>
+					<a href="#" class="generate">generate</a>
 				</div>
 			</div>
 			<div class="doc" id="doc"></div>	
@@ -30,6 +32,7 @@
 	</div>
 
 	<div id="listbox">
+		<div><a href="#">x</a></div>
 		<ul></ul>
 	</div>
 	<!-- div class="drag"></div -->
@@ -39,7 +42,8 @@
 		 * __Hook is an id
 		 * __Class should be a css class
 		 * __Selector should be a css selector
-		**/		
+		**/	
+		
 		var cfg = {
 			doccls:'doc',
 			rowcls:'row',
@@ -50,25 +54,26 @@
 			vmin:50,
 		};
 		
+		var newDoc = $merge(cfg,{rows:[{height:100,grids:[{width:600}]}]});
+		
 		var pagename = null;
 		
 		/* init */
 		var doc = new PageSlide.Doc(cfg);
 		
 		
-		
-		Delegate('actionbar','#jGeneratePage','click',function(){
-			doc.generatePage();
-		});		
-		
-		Delegate('actionbar','#jLoad','click',function(){		
-			doc.showTempletes();
+		Delegate('actionbar','a','click',function(e,l){
+			var el = e.target ;
+			switch(el.get('class')){
+				case 'new':doc.create(newDoc);break; 
+				case 'load':doc.showTempletes();;break; 
+				case 'save':doc.save();break; 
+				case 'edit':el.set('class','preview');break; 
+				case 'preview':el.set('class','edit');break; 
+				case 'generate':doc.generatePage();;break; 
+			
+			}
 		});
-		
-		Delegate('actionbar','#jSave','click',function(e){
-			doc.save();
-		});
-		
 	</script>
 </body>
 </html>

@@ -39,6 +39,12 @@ var Container = new Class({
 		
 		return re;
 	},
+	
+	/**
+	 *	调整行或网格的高度或宽度
+	 *	参数
+	 *
+	**/
 
 
 	size : function(type,v){			
@@ -49,131 +55,145 @@ var Container = new Class({
 })
 
 var Grid = new Class({
-		opt:{			
-			gridcls : 'grid', 
-			rowmargin : 15,
-			hhcls : 'hhandler'
-		},
+	//默认配置，当初始化函数未传入opt时使用此配置替代。
+	opt:{			
+		gridcls : 'grid', 
+		rowmargin : 15,
+		hhcls : 'hhandler'
+	},
 		
-		Extends : Container,
-		
-		initialize : function (opt,row) {
-			this.opt = opt = $merge(this.opt,opt);
-			this.parentrow = row;		
-			var cls = opt.gridcls;
-			this.elem = new Element('div', {
-					'class' : cls
-				});	
-			this.unselectable();
-			this.showhideBtn();
-			this.prepareFunc();
-		},
-		unselectable:function(){
-			var el = this.elem;
-			el.set('unselectable','on');//for ie
-			el.set('onselectstart','return false');//for webkit
-			el.setStyle('-moz-user-select','none')//for ff
-		},
-		showhideBtn:function(){
-			this.elem.addEvent('mouseover',function(){
-				this.getElements('.btn').removeClass('hide');
+	//扩展 Container 类以使用其中的函数
+	Extends : Container,
+	
+	
+	//初始化函数
+	initialize : function (opt,row) {
+		this.opt = opt = $merge(this.opt,opt);//将参数opt合并到当前对象的opt属性上去
+		this.parentrow = row;		//设置grid的父元素
+		var cls = opt.gridcls;		//将opt中的gridcls存为当前作用域的副本，以节约作用域链查找的时间
+		this.elem = new Element('div', {
+				'class' : cls //创建元素
+			});	
+		this.unselectable();//设置元素不可选中
+		this.showhideBtn(); //显示隐藏工具条
+		this.prepareFunc(); //绑定相关函数
+	},
+	unselectable:function(){
+		var el = this.elem;
+		el.set('unselectable','on');//for ie
+		el.set('onselectstart','return false');//for webkit
+		el.setStyle('-moz-user-select','none')//for ff
+	},
+	showhideBtn:function(){
+		this.elem.addEvent('mouseover',function(){
+			this.getElements('.btn').removeClass('hide');
+		});
+		this.elem.addEvent('mouseout',function(){
+			this.getElements('.btn').addClass('hide');
+		});
+	},
+	prepareFunc : function () {
+		//保存当前作用域下的this值
+		var _this = this;
+		//创建工具条容器
+		var func = new Element('div', {
+				'class' : 'gridfunc'
 			});
-			this.elem.addEvent('mouseout',function(){
-				this.getElements('.btn').addClass('hide');
+		var btnbasecls = ' btn hide';
+		//使用一个json数据结构来定义所有的工具按钮
+		var btns = {
+			slicegrid : {
+				cls : 'btnslicegrid',
+				txt : '吅',
+				handler : function(){
+					_this.sliceGrid();
+				}
+			}, 
+			slicerow : {
+				cls : 'btnslicerow',
+				txt : '吕',
+				handler : function(){
+					_this.sliceRow();
+				}
+			}
+		};
+		//遍历btns，生成按钮并绑定相应事件
+		for (var key in btns) {
+			var btn = btns[key];
+			var elem = new Element('a', {
+					'class' : btn.cls + btnbasecls, 
+					'html' : btn.txt
 			});
-		},
-		prepareFunc : function () {
-			var _this = this;
-			var func = new Element('div', {
-					'class' : 'gridfunc'
-				});
-			var btnbasecls = ' btn hide';
-			var btns = {
-				slicegrid : {
-					cls : 'btnslicegrid',
-					txt : '吅',
-					handler : function(){
-						_this.sliceGrid();
-					}
-				}, 
-				slicerow : {
-					cls : 'btnslicerow',
-					txt : '吕',
-					handler : function(){
-						_this.sliceRow();
-					}
+			elem.addEvent('click', (function () {
+				var hd = btn.handler;
+				//创建闭包，保持住hd的值，从而在触发事件时仍然可以访问之
+				return function () {
+					hd();
 				}
-			};
-			for (var key in btns) {
-				var btn = btns[key];
-				var elem = new Element('a', {
-						'class' : btn.cls + btnbasecls, 
-						'html' : btn.txt
-					});
-				elem.addEvent('click', (function () {
-							var hd = btn.handler;
-							return function () {
-								hd();
-							}
-						})());				
-				elem.inject(func);
-			}
-			func.inject(this.elem, 'top');
-		},		
+			})());				
+			//将按钮插入工具条中
+			elem.inject(func);
+		}
+		//将工具条插入grid中
+		func.inject(this.elem, 'top');
+	},		
 		
-		
-		sliceRow : function(){
-			var el = this.elem;
-			var parentrow = this.parentrow;
-			var hasSibling = this.elem.getSiblings('.grid').length ;
-			var opt = this.opt;
-			if( ! hasSibling){				
-				var h = parentrow.fit('height');
-				if(h){
-					parentrow.size('height',h);
-					var row = new Row(opt);
-					row.addGrid();
-					row.elem.inject(parentrow.elem,'after');
-					row.size('height',h);
-					var vhandler = new Vhandler(opt);
-					vhandler.elem.inject(parentrow.elem,'after');	
-				}
-			}else{
-				var h = this.fit('height');
-				if(h){
-					rowa = new Row(opt);	
-					rowa.addGrid();
-					rowa.size('height',h);
-					rowa.elem.inject(el);					
-					var vhandler = new Vhandler(opt);
-					vhandler.elem.inject(el);	
-					rowb = new Row(opt);
-					rowb.addGrid();
-					rowb.size('height',h);
-					rowb.elem.inject(el);
-				}
+	//切割行的方法
+	sliceRow : function(){
+		var el = this.elem;
+		var parentrow = this.parentrow;
+		var hasSibling = this.elem.getSiblings('.grid').length ;
+		var opt = this.opt;
+		//若当前网格是当前行中唯一的网格，则切割父亲行容器
+		if( ! hasSibling){				
+			var h = parentrow.fit('height');
+			if(h){
+				parentrow.size('height',h);
+				var row = new Row(opt);
+				row.addGrid();
+				row.elem.inject(parentrow.elem,'after');
+				row.size('height',h);
+				var vhandler = new Vhandler(opt);
+				vhandler.elem.inject(parentrow.elem,'after');	
 			}
-			if(this.elem){
-				
-			}
-		},
-		
-		sliceGrid : function(){
-			var el = this.elem;	
-			var opt = this.opt;
-			var w;	
-			w = this.fit('width');
-			if(w){
-				this.size('width',w);
-				var grid = new Grid(opt);
-				grid.elem.inject(el,'after');
-				grid.size('width',w);
-				var hhandler = new Hhandler(opt);
-				hhandler.elem.inject(el,'after');
+		//否则则在其中添加高度相同的两个子行容器
+		}else{
+			var h = this.fit('height');
+			if(h){
+				rowa = new Row(opt);	
+				rowa.addGrid();
+				rowa.size('height',h);
+				rowa.elem.inject(el);					
+				var vhandler = new Vhandler(opt);
+				vhandler.elem.inject(el);	
+				rowb = new Row(opt);
+				rowb.addGrid();
+				rowb.size('height',h);
+				rowb.elem.inject(el);
 			}
 		}
-		
-	});
+		if(this.elem){
+			
+		}
+	},
+	
+	
+	//切割网格容器的方法
+	sliceGrid : function(){
+		var el = this.elem;	
+		var opt = this.opt;
+		var w;	
+		w = this.fit('width');
+		if(w){
+			this.size('width',w);
+			var grid = new Grid(opt);
+			grid.elem.inject(el,'after');
+			grid.size('width',w);
+			var hhandler = new Hhandler(opt);
+			hhandler.elem.inject(el,'after');
+		}
+	}
+});
 
 var Row = new Class({
 		
@@ -212,13 +232,14 @@ var Row = new Class({
 				});
 			var btnbasecls = ' btn hide';
 			var btns = {
+				/*
 				addgrid : {
 					cls : 'btnaddrow',
 					txt : '+',
 					handler : function(obj){
 						_this.addRow();
 					}
-				}, 
+				},		
 				removerow : {
 					cls : 'btnremoverow',
 					txt : '-',
@@ -226,6 +247,7 @@ var Row = new Class({
 						_this.removeRow();
 					}
 				}
+				*/		
 			};
 			for (var key in btns) {
 				var btn = btns[key];
@@ -342,29 +364,125 @@ var Handler = new Class({
 			};
 			
 			if(prev){
-				if( next ){
-				if( nprev[mode] > min[mode] && nnext[mode] > min[mode] ){					
-					prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );
-					next.setStyle(wh[mode],next.size[size[mode]] - changed[mode] );
-					//console.show(  (prev.size[size[mode]] + changed[mode]) + ' , ' + (prev.size[size[mode]] - changed[mode]));		
-					//console.trace();					
-				}			
-				}else{
-					if( nprev[mode] > min[mode] ){				
-						prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );				
-						//console.show(prev.size[size[mode]] + changed[mode] );
+				if(next){
+					if( nprev[mode] > min[mode] && nnext[mode] > min[mode] ){
+						if(this.fit(prev,'prev') && this.fit(next,'next') ){
+							prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );								
+							next.setStyle(wh[mode],next.size[size[mode]] - changed[mode] );
+						}
 					}
-				}				
-			}
-			
+				}else if( nprev[mode] > min[mode] ){	
+					if(this.fit(prev,'prev')){
+						prev.setStyle(wh[mode],prev.size[size[mode]] + changed[mode] );		
+					}
+				}
+			}		
 			
 		}, 
+		
 		end : function (event) {
 			this.document.removeEvents('mousemove');
 			this.document.removeEvents('mouseup');
 			this.prev = null;
 			this.next = null;
 			this.startpos = null;
+		},
+		
+		fit : function (elem,type){
+			var _this = this;
+			var hmin = this.opt.hmin;
+			var vmin = this.opt.vmin;
+			var hmargin = 15;
+			var vmargin = 15;
+			var mode = this.mode;
+			var childs;
+			var ret = true ;
+			var returns = [];
+			
+			
+			if(mode == 'h'){		
+				//左右grid			
+					
+				
+				childs = elem.getElements('>.row').getElements('>.grid');					
+				// 如果没有后继了
+				if(!childs.length){
+					//
+					//判断					
+					return elem.getStyle('width').slice(0,-2)>=hmin;
+				}else{
+					childs.each(function(e,i){
+						if(e.length){
+							
+							var prev = type=='prev'?true:false;
+							j = prev?0:1,
+							l = prev?e.length-1:e.length,
+							n = prev?e.length-1:0,
+							h = e[0].getParent('.grid').getStyle('width').toInt()-1;
+							
+							for(; j < l;j++){
+								h -= e[j].getStyle('width').slice(0,-2);
+								h -= vmargin;
+							}											
+							
+							e = e[n];
+							//h = h<hmin?'50':h;
+							e.setStyle('width',h);	
+						}		
+						
+						if(_this.fit(e,type)){
+							returns[i]=true;
+						}else{
+							returns[i]=false;
+							//e.setStyle('height',hmin);
+						}					
+					})
+					return !returns.contains(false);
+				}		
+				
+			}else if( mode == 'v'){		
+				
+				childs = elem.getElements('>.grid').getElements('>.row');					
+				// 如果没有后继了
+				if(childs.length==1&&!childs[0].length){
+					//
+					//判断					
+					return elem.getStyle('height').slice(0,-2)>=hmin;
+				}else{
+					childs.each(function(e,i){
+						if(e.length){
+							
+							var prev = type=='prev'?true:false;
+							j = prev?0:1,
+							l = prev?e.length-1:e.length,
+							n = prev?e.length-1:0,
+							h = e[0].getParent('.row').getStyle('height').slice(0,-2);
+							
+							for(; j < l;j++){
+								h -= e[j].getStyle('height').slice(0,-2);
+								h -= hmargin;
+							}											
+							
+							e = e[n];
+							//h = h<hmin?'50':h;
+							e.setStyle('height',h);	
+						}						
+						if(_this.fit(e,type)){
+							returns[i]=true;
+						}else{
+							returns[i]=false;
+							//e.setStyle('height',hmin);
+						}					
+					})
+					return !returns.contains(false);
+				}		
+		
+			}
+				
+			//while(elem.getElements('.grid'));
+			
+			//return true;
+		
 		}
 		
 	});
@@ -418,10 +536,19 @@ P.Doc = new Class({
 			var cls = opt.doccls;
 			this.rowmargin = opt.rowmargin;
 			this.elem = document.getElement('.' + cls);
-			this.addRow();
+			this._addRow();
+			//this.makeUI(opt);
 		}, 
+		
+		create : function(json){
+			if(!pagename&&confirm('当前模板尚未保存，现在保存吗？')){				
+				this.save();
+			}
 			
-		addRow : function () {
+			this.makeUI(json);			
+		},
+			
+		_addRow : function () {
 			var row = new Row(this.opt);
 			row.addGrid();
 			row.elem.inject(this.elem);
@@ -432,7 +559,7 @@ P.Doc = new Class({
 		
 							
 		// @return json 返回文档结构 
-		getStruct : function (){
+		_getStruct : function (){
 			//返回容器内Row结构	
 			function getRowStruct(elem){
 				var rows = [];
@@ -475,7 +602,7 @@ P.Doc = new Class({
 		
 		
 		//生成文档html结构，doc内的结构
-		getPageHtml : function (){
+		_getPageHtml : function (){
 			var _this = this;
 			function getRowHtml( obj , wrap ){
 				if(obj.rows){
@@ -519,7 +646,7 @@ P.Doc = new Class({
 			
 		
 		
-			var doc = this.struct || this.getStruct();
+			var doc = this.struct || this._getStruct();
 			var rowcls = doc.rowcls,
 				rows = doc.rows,
 				doccls = doc.doccls,
@@ -532,7 +659,7 @@ P.Doc = new Class({
 			return docelem;
 		},	
 		
-		getEditingHtml : function () {
+		_getEditingHtml : function () {
 			var _this = this;
 			function getRowHtml( obj , wrap ){
 				if(obj.rows){
@@ -579,7 +706,7 @@ P.Doc = new Class({
 			
 		
 		
-			var doc = this.struct || this.getStruct();
+			var doc = this.struct || this._getStruct();
 			var rowcls = doc.rowcls,
 				rows = doc.rows,
 				doccls = doc.doccls,
@@ -598,7 +725,7 @@ P.Doc = new Class({
 			if(!name)return;
 			args = {action:'generatepage',name:name}
 			this.save();
-			finaled = this.getPageHtml();
+			finaled = this._getPageHtml();
 			new Request({
 				url:this.ajaxurl.substitute(args), 
 				method: 'post',
@@ -606,9 +733,10 @@ P.Doc = new Class({
 					console.log(e);		
 				}
 			}).send('data=' + finaled.toHtml());
-			finaled.replaces(this.elem);
-			$('status').set('href','css/final.css');
-			Do('js/addbtn.js');
+			console.log(this.elem);
+			//finaled.replaces(this.elem);
+			//$('status').set('href','css/final.css');
+			//Do('js/addbtn.js');
 		},		
 		
 		//生成
@@ -632,11 +760,15 @@ P.Doc = new Class({
 						var li = new Element('li').inject(ul);
 						var a = new Element('a').set({'html':array[i],'href':'javascript:;'}).inject(li);						
 					}
-					Delegate(listbox,'a','click',function(e){
+					Delegate(listbox.getElement('ul'),'a','click',function(e){
 						var name = e.target.get('html');
 						doc.load(name);
 						pagename = name;
-						$('listbox').removeClass('show');					
+						listbox.removeClass('show');					
+					});
+					listbox.getElement('div a').addEvent('click',function(){
+						listbox.removeClass('show');
+						return false;
 					});
 				}
 			}).send();
@@ -648,8 +780,7 @@ P.Doc = new Class({
 				url: this.ajaxurl.substitute(args),
 				onComplete: function(json){
 					json = JSON.decode(json);
-					doc.makeUI(json);
-					doc.struct = json;
+					doc.makeUI(json);					
 				}
 			}).send();
 		},
@@ -693,23 +824,25 @@ P.Doc = new Class({
 			var gridmargin = json.gridmargin;
 			var rows = json.rows;
 			var ele = makeRowUI(this.elem.empty(),rows,this.opt);
+			this.struct = json;
 			ele.replaces(this.elem);
 		},
 		
 		save : function () {
 			var struct,name,args;
 
-			struct = this.getStruct();			
+			struct = this._getStruct();			
 			name = pagename = pagename || prompt(msg.setname);
 			args = {action:'save',name:name}
-			new Request({
-				url: this.ajaxurl.substitute(args), 
-				method: 'post',
-				onComplete: function(e){
-					console.log(e);		
-				}
-			}).send('data=' + JSON.encode(this.getStruct()));
-			
+			if(name){
+				new Request({
+					url: this.ajaxurl.substitute(args), 
+					method: 'post',
+					onComplete: function(e){
+						//console.log(e);		
+					}
+				}).send('data=' + JSON.encode(this._getStruct()));
+			}
 			//console.log(struct);
 			//console.log(JSON.encode(struct));			
 		}
